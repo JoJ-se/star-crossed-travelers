@@ -42,17 +42,8 @@ class Level3 extends Phaser.Scene {
     this._checkpointX     = 700;
     this._checkpointY     = L3_H - 80;
 
-    // Conduit mechanic
-    this._nextConduit     = 1;   // next expected activation index (1-based)
-    this._conduitsLit     = 0;
-    this._allConduitsDone = false;
-    this._finalGateOpen   = false;
-
     // Rocky flags
     this._welcomeDone        = false;
-    this._firstConduitDone   = false;
-    this._wrongOrderDone     = false;
-    this._allConduitsDone2   = false;
     this._halfwayDone        = false;
     this._firstDeathDone     = false;
     this._bossReachedDone    = false;
@@ -67,8 +58,6 @@ class Level3 extends Phaser.Scene {
 
     this._buildBackground();
     this._buildPlatforms();
-    this._buildConduits();
-    this._buildGates();
     this._buildOrbs();
     this._buildExitBeacon();
     this._buildBoss();
@@ -327,142 +316,6 @@ class Level3 extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────────────────
   // ENERGY CONDUITS — 5 wall-mounted, must activate in order 1→5
   // ─────────────────────────────────────────────────────────────────────────
-  _buildConduits() {
-    this._conduitData = [];  // { body, g, index, activated }
-
-    // [x, y, conduitIndex (1-based)]
-    // Placed near platforms, numbered so some require going slightly off direct path
-    const defs = [
-      [200,  L3_H - 360,  1],   // near tier 1 left
-      [1200, L3_H - 740,  2],   // near tier 3 right wall
-      [280,  L3_H - 1540, 3],   // near tier 6 left
-      [1120, L3_H - 2060, 4],   // near tier 8 right
-      [420,  L3_H - 2840, 5],   // near tier 11 left
-    ];
-
-    defs.forEach(([cx, cy, idx]) => {
-      const g = this.add.graphics().setDepth(4);
-      this._drawConduit(g, cx, cy, idx, false);
-
-      const body = this.physics.add.staticImage(cx, cy, null).setVisible(false);
-      body.setDisplaySize(52, 80); body.refreshBody();
-      body._conduitIndex = idx;
-      body._activated    = false;
-      body._conduitG     = g;
-      body._cx           = cx;
-      body._cy           = cy;
-
-      this._conduitData.push({ body, g, index: idx, activated: false });
-    });
-  }
-
-  _drawConduit(g, cx, cy, idx, activated, wrongFlash) {
-    g.clear();
-
-    const col = wrongFlash ? 0xef4444
-              : activated  ? L3_PAL.gold
-              : 0x4338ca;   // dim indigo when inactive
-    const innerCol = wrongFlash ? 0xfca5a5
-                   : activated  ? L3_PAL.amber
-                   : 0x818cf8;
-    const glowA = activated ? 0.3 : 0.1;
-
-    // Wall mount bracket
-    g.fillStyle(L3_PAL.stone, 1);
-    g.fillRect(cx - 20, cy - 36, 40, 72);
-    g.lineStyle(1.5, L3_PAL.stoneHi, 0.7);
-    g.strokeRect(cx - 20, cy - 36, 40, 72);
-
-    // Glow halo
-    g.fillStyle(col, glowA);
-    g.fillCircle(cx, cy, 28);
-
-    // Gem ring
-    g.lineStyle(2.5, col, 0.9);
-    g.strokeCircle(cx, cy, 18);
-
-    // Gem fill
-    g.fillStyle(innerCol, 0.85);
-    g.fillCircle(cx, cy, 11);
-    g.fillStyle(0xffffff, activated ? 0.7 : 0.3);
-    g.fillCircle(cx - 3, cy - 3, activated ? 5 : 3);
-
-    // Number glyph above gem
-    const numCol = activated ? '#fcd34d' : wrongFlash ? '#fca5a5' : '#818cf8';
-    // We'll draw the number as a separate text object if not already done
-    // (graphics can't render text — handled via _conduitTexts)
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // GATES — stone blocks that slide open when conduits are all lit
-  // ─────────────────────────────────────────────────────────────────────────
-  _buildGates() {
-    this._gates = [];
-
-    // Two gate blocks flanking the tier-14 entrance (just below boss arena)
-    const gateY = L3_H - 3500;
-    const defs = [
-      [490, gateY, 120, 26],
-      [910, gateY, 120, 26],
-    ];
-
-    defs.forEach(([x, y, w, h]) => {
-      const g = this.add.graphics().setDepth(3);
-      g.fillStyle(0x1c1917, 1);  g.fillRect(x - w/2, y - h/2, w, h);
-      g.fillStyle(0x292524, 1);  g.fillRect(x - w/2 + 4, y - h/2 + 4, w - 8, h - 8);
-      g.lineStyle(2, 0xef4444, 0.7); g.strokeRect(x - w/2, y - h/2, w, h);
-      // Red X marks — gate is locked
-      g.lineStyle(2, 0xef4444, 0.5);
-      g.lineBetween(x - w/2 + 8, y - h/2 + 4, x + w/2 - 8, y + h/2 - 4);
-      g.lineBetween(x - w/2 + 8, y + h/2 - 4, x + w/2 - 8, y - h/2 + 4);
-
-      const body = this.physics.add.staticImage(x, y, null).setVisible(false);
-      body.setDisplaySize(w, h); body.refreshBody();
-      this._platforms.add(body);
-
-      this._gates.push({ g, body, x, y, w, h });
-    });
-  }
-
-  _openGates() {
-    if (this._finalGateOpen) return;
-    this._finalGateOpen = true;
-
-    this._gates.forEach(({ g, body, x, y, w, h }) => {
-      // Flash gold then slide upward off screen
-      this.tweens.add({
-        targets: g,
-        alpha: 0,
-        duration: 600,
-        ease: 'Sine.easeIn',
-        onStart: () => {
-          g.clear();
-          g.fillStyle(L3_PAL.gold, 0.9); g.fillRect(x - w/2, y - h/2, w, h);
-        },
-        onComplete: () => {
-          g.clear();
-          body.destroy();
-        },
-      });
-    });
-
-    // Pulse ripple from gate area
-    const gateY = L3_H - 3500;
-    const pulse = this.add.graphics().setDepth(5);
-    this.tweens.add({
-      targets: { r: 10 },
-      r: 200,
-      duration: 600,
-      ease: 'Sine.easeOut',
-      onUpdate: (tween, target) => {
-        pulse.clear();
-        pulse.lineStyle(3, L3_PAL.gold, 1 - tween.progress);
-        pulse.strokeCircle(700, gateY, target.r);
-      },
-      onComplete: () => pulse.destroy(),
-    });
-  }
-
   // ─────────────────────────────────────────────────────────────────────────
   // ORBS
   // ─────────────────────────────────────────────────────────────────────────
@@ -680,12 +533,6 @@ class Level3 extends Phaser.Scene {
       fontStyle: 'bold', stroke: '#030712', strokeThickness: 3, resolution: dpr,
     }).setOrigin(1, 0).setScrollFactor(0).setDepth(30);
 
-    // Conduit progress — top right
-    const dpr2 = window.devicePixelRatio || 1;
-    this._conduitHUD = this.add.text(W - 16, 42, 'Conduits: 0 / 5', {
-      fontSize: '13px', fontFamily: 'Arial, sans-serif', color: '#818cf8',
-      fontStyle: 'bold', stroke: '#030712', strokeThickness: 3, resolution: dpr2,
-    }).setOrigin(1, 0).setScrollFactor(0).setDepth(30);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -835,12 +682,6 @@ class Level3 extends Phaser.Scene {
       this._orbs++;
       this._orbCountText.setText(`Orbs: ${this._orbs} / ${this._totalOrbs}`);
 
-      if (this._orbs === 1 && !this._firstOrbDone) {
-        this._firstOrbDone = true;
-        this.time.delayedCall(300, () => {
-          this._queueRocky("The builders left these. Either as offerings or they forgot them. Either way — yours now.", 4000);
-        });
-      }
     });
 
     // Checkpoints
@@ -851,98 +692,11 @@ class Level3 extends Phaser.Scene {
       }
     });
 
-    // Conduits
-    this._conduitData.forEach(entry => {
-      this.physics.add.overlap(this.joao, entry.body, () => {
-        this._touchConduit(entry);
-      });
-    });
-
     // Exit beacon
     this.physics.add.overlap(this.joao, this._exitBeacon, () => {
-      if (!this._levelComplete && this._allConduitsDone) {
+      if (!this._levelComplete) {
         this._completeLevel();
       }
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // CONDUIT ACTIVATION LOGIC
-  // ─────────────────────────────────────────────────────────────────────────
-  _touchConduit(entry) {
-    if (entry.activated) return;
-
-    if (entry.index === this._nextConduit) {
-      // Correct order — activate
-      entry.activated    = true;
-      entry.body._activated = true;
-      this._nextConduit++;
-      this._conduitsLit++;
-      this._conduitHUD.setText(`Conduits: ${this._conduitsLit} / 5`);
-
-      // Redraw lit
-      this._drawConduit(entry.g, entry.body._cx, entry.body._cy, entry.index, true, false);
-
-      // Pulse ripple
-      this._pulseConduit(entry.body._cx, entry.body._cy, L3_PAL.gold);
-
-      if (!this._firstConduitDone) {
-        this._firstConduitDone = true;
-        this.time.delayedCall(400, () => {
-          this._queueRocky(
-            "The energy is still running through this place. Whatever built it — they planned to come back.",
-            4500
-          );
-        });
-      }
-
-      if (this._conduitsLit === 5) {
-        this._allConduitsDone = true;
-        this.time.delayedCall(600, () => {
-          this._openGates();
-          if (!this._allConduitsDone2) {
-            this._allConduitsDone2 = true;
-            this._queueRocky(
-              "All five. The old builders would be... mildly impressed. Emphasis on mildly.",
-              4800
-            );
-          }
-        });
-      }
-
-    } else {
-      // Wrong order — flash red
-      this._drawConduit(entry.g, entry.body._cx, entry.body._cy, entry.index, false, true);
-      this._pulseConduit(entry.body._cx, entry.body._cy, 0xef4444);
-
-      this.time.delayedCall(500, () => {
-        this._drawConduit(entry.g, entry.body._cx, entry.body._cy, entry.index, false, false);
-      });
-
-      if (!this._wrongOrderDone) {
-        this._wrongOrderDone = true;
-        this._queueRocky(
-          "That's the wrong sequence. There's an order to these things. Try reading the room.",
-          4200
-        );
-      }
-    }
-  }
-
-  _pulseConduit(cx, cy, color) {
-    const pulse = this.add.graphics().setDepth(5);
-    const obj = { r: 20 };
-    this.tweens.add({
-      targets: obj,
-      r: 90,
-      duration: 500,
-      ease: 'Sine.easeOut',
-      onUpdate: (tween) => {
-        pulse.clear();
-        pulse.lineStyle(2.5, color, 1 - tween.progress);
-        pulse.strokeCircle(cx, cy, obj.r);
-      },
-      onComplete: () => pulse.destroy(),
     });
   }
 
