@@ -263,7 +263,7 @@ class Level3 extends Phaser.Scene {
       [700,  L3_H - 2540, 180, 20],
       [1180, L3_H - 2500, 140, 20],
 
-      // Tier 11
+            // Tier 11
       [420,  L3_H - 2780, 140, 20],
       [900,  L3_H - 2820, 140, 20],
 
@@ -274,6 +274,9 @@ class Level3 extends Phaser.Scene {
 
       // Tier 13 — pre-boss checkpoint area
       [700,  L3_H - 3340, 260, 22],
+
+      // Tier 13.5 — extra step before boss arena
+      [700,  L3_H - 3490, 220, 20],
 
       // Tier 14 — boss arena (wide top platform)
       [700,  L3_H - 3640, 700, 22],
