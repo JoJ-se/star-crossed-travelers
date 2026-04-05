@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Star Crossed Travelers</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="home">
+    <div class="stars"></div>
+
+    <div class="shooting-stars">
+      <div class="shot"></div>
+      <div class="shot"></div>
+      <div class="shot"></div>
+      <div class="shot"></div>
+      <div class="shot"></div>
+      <div class="shot"></div>
+    </div>
+
+    <div class="particles" id="particles"></div>
+
+    <!-- Girl scene -->
+    <div class="girl-scene" id="girl-scene">
+      <div class="girl-astronaut">
+        <div class="girl-bubble" id="girl-bubble"></div>
+
+        <div class="girl-astronaut-inner">
+          <div class="g-helmet"></div>
+          <div class="g-tank"></div>
+          <div class="g-suit"></div>
+          <div class="g-arm-l"></div>
+          <div class="g-arm-r"></div>
+          <div class="g-leg-l"></div>
+          <div class="g-leg-r"></div>
+        </div>
+      </div>
+
+      <div class="ice-cream">
+        <div class="ic-scoop"></div>
+        <div class="ic-cone"></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h1>
+        <span>S</span><span>t</span><span>a</span><span>r</span><span>&nbsp;</span>
+        <span>C</span><span>r</span><span>o</span><span>s</span><span>s</span><span>e</span><span>d</span><span>&nbsp;</span>
+        <span>T</span><span>r</span><span>a</span><span>v</span><span>e</span><span>l</span><span>e</span><span>r</span><span>s</span>
+      </h1>
+
+      <div class="astronaut" id="astronaut">
+        <div class="astronaut-body" id="astronaut-body">
+          <div class="astro-bubble" id="astro-bubble"></div>
+          <div class="helmet"></div>
+          <div class="tank"></div>
+          <div class="suit"></div>
+          <div class="arm-l"></div>
+          <div class="arm-r"></div>
+          <div class="leg-l"></div>
+          <div class="leg-r"></div>
+        </div>
+      </div>
+
+      <button id="start-btn">Begin Journey</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+
+  <!-- Phaser + Game -->
+  <div id="game-container" style="display:none; position:fixed; inset:0; z-index:200; background:#030712;"></div>
+  <script src="node_modules/phaser/dist/phaser.js"></script>
+  <script src="game/scenes/IntroCutscene.js"></script>
+  <script src="game/scenes/Level1.js"></script>
+  <script src="game/main.js"></script>
+</body>
+</html>
