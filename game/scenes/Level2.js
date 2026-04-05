@@ -689,6 +689,12 @@ class Level2 extends Phaser.Scene {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
     this._coyoteTime = 0;
+
+    // Mobile touch controls
+    if (window.mobileControls && window.mobileControls.isTouch) {
+      window.mobileControls.show();
+      this.events.once('shutdown', () => window.mobileControls.hide());
+    }
   }
 
   _setupCollisions() {
@@ -779,10 +785,11 @@ class Level2 extends Phaser.Scene {
     const speed    = 240;
 
     // ── Movement
-    if (keys.left.isDown || keys.a.isDown) {
+    const mc = window.mobileControls;
+    if (keys.left.isDown || keys.a.isDown || (mc && mc.left)) {
       joao.setVelocityX(-speed);
       joao.setFlipX(true);
-    } else if (keys.right.isDown || keys.d.isDown) {
+    } else if (keys.right.isDown || keys.d.isDown || (mc && mc.right)) {
       joao.setVelocityX(speed);
       joao.setFlipX(false);
     } else {
@@ -798,7 +805,8 @@ class Level2 extends Phaser.Scene {
 
     // ── Jump
     const jumpPressed = Phaser.Input.Keyboard.JustDown(keys.up)
-                     || Phaser.Input.Keyboard.JustDown(keys.space);
+                     || Phaser.Input.Keyboard.JustDown(keys.space)
+                     || (mc && mc.consumeJump());
     if (jumpPressed && this._coyoteTime > 0) {
       joao.setVelocityY(-640);
       this._coyoteTime = 0;

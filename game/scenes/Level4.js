@@ -857,6 +857,9 @@ class Level4 extends Phaser.Scene {
     this._levelComplete   = true;
     this._controlsEnabled = false;
 
+    // Hide touch controls during ending cutscene
+    if (window.mobileControls) window.mobileControls.hide();
+
     // Joao slides to a stop
     this.tweens.add({
       targets: this.joao.body.velocity,
@@ -950,6 +953,12 @@ class Level4 extends Phaser.Scene {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
     this._coyoteTime = 0;
+
+    // Mobile touch controls
+    if (window.mobileControls && window.mobileControls.isTouch) {
+      window.mobileControls.show();
+      this.events.once('shutdown', () => window.mobileControls.hide());
+    }
   }
 
   _setupCollisions() {
@@ -1031,12 +1040,13 @@ class Level4 extends Phaser.Scene {
     // ── ICE PHYSICS — momentum-based movement
     if (this._controlsEnabled) {
       const accel = 380;
+      const mc = window.mobileControls;
 
-      if (keys.left.isDown || keys.a.isDown) {
+      if (keys.left.isDown || keys.a.isDown || (mc && mc.left)) {
         // Accelerate left — but cap at max speed
         joao.body.velocity.x = Math.max(joao.body.velocity.x - accel * (delta / 1000) * 4.5, -260);
         joao.setFlipX(true);
-      } else if (keys.right.isDown || keys.d.isDown) {
+      } else if (keys.right.isDown || keys.d.isDown || (mc && mc.right)) {
         joao.body.velocity.x = Math.min(joao.body.velocity.x + accel * (delta / 1000) * 4.5, 260);
         joao.setFlipX(false);
       } else {
@@ -1055,7 +1065,8 @@ class Level4 extends Phaser.Scene {
 
       // ── Jump
       const jumpPressed = Phaser.Input.Keyboard.JustDown(keys.up)
-                       || Phaser.Input.Keyboard.JustDown(keys.space);
+                       || Phaser.Input.Keyboard.JustDown(keys.space)
+                       || (mc && mc.consumeJump());
       if (jumpPressed && this._coyoteTime > 0) {
         joao.setVelocityY(-640);
         this._coyoteTime = 0;
