@@ -192,25 +192,16 @@ function onHoverEnd() {
   }, 200);
 }
 
-// ── Mouse Tracking Hover ────────────────────────────────────
+// ── First Hover Anywhere On Screen ──────────────────────────
+let introStarted = false;
+
 if (astronaut && astronautBody && astroBubble && girlScene) {
-  document.addEventListener('mousemove', (e) => {
-    const rect = astronaut.getBoundingClientRect();
+  document.addEventListener('mousemove', () => {
+    if (introStarted) return;
 
-    const isOver =
-      e.clientX >= rect.left &&
-      e.clientX <= rect.right &&
-      e.clientY >= rect.top &&
-      e.clientY <= rect.bottom;
-
-    if (isOver && !isHovering) {
-      isHovering = true;
-      onHoverStart();
-    } else if (!isOver && isHovering) {
-      isHovering = false;
-      onHoverEnd();
-    }
-  });
+    introStarted = true;
+    onHoverStart();
+  }, { once: true });
 
   girlScene.addEventListener('animationend', (e) => {
     if (e.target !== girlScene) return;
