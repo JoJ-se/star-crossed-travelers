@@ -36,7 +36,6 @@ const girlBubble = document.getElementById('girl-bubble');
 const btn = document.getElementById('start-btn');
 
 // ── State / Timers ──────────────────────────────────────────
-let isHovering = false;
 let girlTriggered = false;
 
 let greetTimer = null;
@@ -158,21 +157,21 @@ async function onHoverStart() {
   }
 
   await typeText(astroBubble, 'Hi! I am Joao!', 30, 'joao');
-  if (!isHovering || currentToken !== typingToken) return;
+if (currentToken !== typingToken) return;
 
-  greetTimer = setTimeout(async () => {
-    if (!isHovering || currentToken !== typingToken) return;
+greetTimer = setTimeout(async () => {
+  if (currentToken !== typingToken) return;
 
-    astronautBody.classList.add('looking');
+  astronautBody.classList.add('looking');
 
-    await typeText(astroBubble, 'Where is my Bichilin?', 30, 'joao');
-    if (!isHovering || currentToken !== typingToken) return;
+  await typeText(astroBubble, 'Where is my Bichilin?', 30, 'joao');
+  if (currentToken !== typingToken) return;
 
-    triggerTimer = setTimeout(() => {
-      if (!isHovering || currentToken !== typingToken) return;
-      restartGirlAnimation();
-    }, 400);
-  }, 500);
+  triggerTimer = setTimeout(() => {
+    if (currentToken !== typingToken) return;
+    restartGirlAnimation();
+  }, 400);
+}, 500);
 }
 
 function onHoverEnd() {
