@@ -606,7 +606,7 @@ class Level1 extends Phaser.Scene {
     // ── Position-based Rocky triggers (spread across the level)
     if (!this._dudeJokeDone && joao.x > 1600) {
       this._dudeJokeDone = true;
-      this._queueRocky("I heard your human calls you 'Dude'. What is a dude?", 4500);
+      this._queueRocky("I heard your human calls you 'Dude'. What is a dude? Is it a type of space potato?", 4500);
     }
     if (!this._starfishDone && joao.x > 2700) {
       this._starfishDone = true;
