@@ -73,7 +73,7 @@ class Level1 extends Phaser.Scene {
       if (!this._welcomeDone) {
         this._welcomeDone = true;
         this._queueRocky(
-          "Welcome to your exploded ship. I've mapped the safest path – though 'safe' is relative when you're floating through your own home.",
+          "Welcome to your exploded ship! It's in pieces...Let's make sure you aren't too - okay?",
           3800
         );
       }
@@ -485,7 +485,7 @@ class Level1 extends Phaser.Scene {
         this._firstOrbDone = true;
         this.time.delayedCall(300, () => {
           this._queueRocky(
-            "Glowing orb – no practical use that I can detect. But humans like shiny things, so collect as many as you want.",
+            "Glowing orb looks like a tiny moon - that's what Elina would say. Sob sob (-^-) So many cute Space things!",
             3500
           );
         });
