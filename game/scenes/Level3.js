@@ -273,16 +273,16 @@ class Level3 extends Phaser.Scene {
       [1200, L3_H - 3020, 140, 20],
 
       // Tier 13 — pre-boss checkpoint area
-      [700,  L3_H - 3340, 260, 22],
+      [200,  L3_H - 3340, 260, 22],
 
       // Tier 13.5 — extra step before boss arena
-      [700,  L3_H - 3490, 220, 20],
+      [1200,  L3_H - 3340, 220, 20],
 
       // Tier 14 — boss arena (wide top platform)
-      [700,  L3_H - 3640, 700, 22],
+      [700,  L3_H - 3500, 500, 22],
 
       // Top — exit platform
-      [700,  L3_H - 3960, 300, 22],
+      [1200,  L3_H - 3960, 300, 22],
     ];
 
     layout.forEach(([x, y, w, h]) => {
