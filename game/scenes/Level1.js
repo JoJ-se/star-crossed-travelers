@@ -403,7 +403,7 @@ class Level1 extends Phaser.Scene {
 
     // Text positions
     const tx = panelX + 104;
-    this._rockyNameText.setText('Rocky').setPosition(tx, panelY + 14).setAlpha(0);
+    this._rockyNameText.setText('Rocky:').setPosition(tx, panelY + 14).setAlpha(0);
     this._rockyBodyText.setText('').setPosition(tx, panelY + 36).setAlpha(0);
     this._rockyPanel.setAlpha(0);
 
