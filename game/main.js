@@ -21,7 +21,7 @@ window.startGame = function () {
         debug: false,
       },
     },
-    scene: [IntroCutscene, Level1, Level2],
+    scene: [IntroCutscene, Level1, Level2, Level3],
   };
 
   new Phaser.Game(config);
