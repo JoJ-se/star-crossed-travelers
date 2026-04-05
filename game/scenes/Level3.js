@@ -276,19 +276,13 @@ class Level3 extends Phaser.Scene {
       [700,  L3_H - 3340, 320, 22],
 
       // Step 1 — easy approach
-      [620,  L3_H - 3450, 220, 20],
-
-      // Step 2 — easy approach
-      [780,  L3_H - 3540, 220, 20],
-
-      // Step 3 — safe staging before boss
-      [700,  L3_H - 3620, 260, 20],
+      [400,  L3_H - 3450, 220, 20],
 
       // Tier 14 — boss arena
-      [700,  L3_H - 3680, 900, 24],
+      [1200,  L3_H - 3680, 500, 24],
 
       // Top — exit platform, much easier to reach
-      [980,  L3_H - 3820, 320, 22],
+      [700,  L3_H - 3820, 320, 22],
     ];
 
     layout.forEach(([x, y, w, h]) => {
