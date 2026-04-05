@@ -1038,7 +1038,7 @@ class Level3 extends Phaser.Scene {
 
       // Alert when Joao is near
       const distToJoao = Math.abs(joao.x - this._bossX);
-      this._bossAlert = distToJoao < 90 && joao.y < this._bossY + 120;
+      this._bossAlert = distToJoao < 50 && joao.y < this._bossY + 120;
 
       this._drawBoss();
     }
