@@ -142,7 +142,7 @@ class IntroCutscene extends Phaser.Scene {
 
     const dpr = window.devicePixelRatio || 1;
 
-    const nameText = this.add.text(panelX + 22, panelY + 16, speaker, {
+    const nameText = this.add.text(panelX + 22, panelY + 16, speaker + ':', {
       fontSize: '13px',
       fontFamily: 'Arial, sans-serif',
       color: '#fcd34d',
