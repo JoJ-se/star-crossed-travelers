@@ -981,7 +981,7 @@ class Level3 extends Phaser.Scene {
 
     this.time.delayedCall(6800, () => {
       this.cameras.main.fadeOut(900, 20, 5, 0);
-      // this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Level4'));
+      this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('CosmicTeaPlanet'));
     });
   }
 
