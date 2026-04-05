@@ -19,6 +19,12 @@ class MobileControls {
     return navigator.maxTouchPoints > 0 || ('ontouchstart' in window);
   }
 
+  // How many pixels the button row occupies at the bottom of the screen.
+  // Panels should add this to their bottom margin so they sit above the buttons.
+  get reservedBottom() {
+    return this._active ? (22 + 76 + 10) : 0; // PAD + SIZE + gap = 108
+  }
+
   // Pass the active Phaser scene so we can create objects inside it.
   show(scene) {
     if (!this.isTouch) return;

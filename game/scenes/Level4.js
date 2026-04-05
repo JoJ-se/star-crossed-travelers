@@ -697,7 +697,8 @@ class Level4 extends Phaser.Scene {
     const panelW = Math.min(700, W - 28);
     const panelX = 14;
     const panelH = 130;
-    const panelY = H - panelH - 14;
+    const mcBottom = (window.mobileControls ? window.mobileControls.reservedBottom : 0);
+    const panelY = H - panelH - 14 - mcBottom;
 
     this._rockyPanel.clear();
     this._rockyPanel.fillStyle(0x0f172a, 0.95);
@@ -777,7 +778,8 @@ class Level4 extends Phaser.Scene {
     const panelW = Math.min(600, W - 28);
     const panelH = 120;
     const panelX = W / 2 - panelW / 2;
-    const panelY = H - panelH - 14;
+    const mcBottom = (window.mobileControls ? window.mobileControls.reservedBottom : 0);
+    const panelY = H - panelH - 14 - mcBottom;
 
     const bg = this.add.graphics().setScrollFactor(0).setDepth(50).setAlpha(0);
     bg.fillStyle(panelBg, 0.95);

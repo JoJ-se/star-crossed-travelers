@@ -376,7 +376,8 @@ class Level1 extends Phaser.Scene {
     const panelW = Math.min(700, W - 28);
     const panelX = 14;
     const panelH = 130;
-    const panelY = H - panelH - 14;
+    const mcBottom = (window.mobileControls ? window.mobileControls.reservedBottom : 0);
+    const panelY = H - panelH - 14 - mcBottom;
 
     // Draw panel background + Rocky avatar
     this._rockyPanel.clear();
