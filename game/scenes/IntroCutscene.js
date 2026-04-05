@@ -462,8 +462,8 @@ class IntroCutscene extends Phaser.Scene {
     const g = this.add.graphics().setDepth(8);
     // Bichilin astronaut body
     this._drawAstronaut(g, 0, 0, s);
-    // Teal visor overlay (Bichilin's colour)
-    g.fillStyle(0x34d399, 0.92);
+    // Pink visor overlay (match landing-page girl)
+    g.fillStyle(0xec4899, 0.92);
     g.fillEllipse(0, -28 * s, 26 * s, 20 * s);
     // Glowing ice cream cone to her right (she's reaching for it)
     const icX = 42 * s, icY = -22 * s;
