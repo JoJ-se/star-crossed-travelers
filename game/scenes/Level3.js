@@ -263,7 +263,7 @@ class Level3 extends Phaser.Scene {
       [700,  L3_H - 2540, 180, 20],
       [1180, L3_H - 2500, 140, 20],
 
-            // Tier 11
+        // Tier 11
       [420,  L3_H - 2780, 140, 20],
       [900,  L3_H - 2820, 140, 20],
 
@@ -273,16 +273,22 @@ class Level3 extends Phaser.Scene {
       [1200, L3_H - 3020, 140, 20],
 
       // Tier 13 — pre-boss checkpoint area
-      [200,  L3_H - 3340, 260, 22],
+      [700,  L3_H - 3340, 320, 22],
 
-      // Tier 13.5 — extra step before boss arena
-      [1200,  L3_H - 3340, 220, 20],
+      // Step 1 — easy approach
+      [620,  L3_H - 3450, 220, 20],
 
-      // Tier 14 — boss arena (wide top platform)
-      [700,  L3_H - 3500, 500, 22],
+      // Step 2 — easy approach
+      [780,  L3_H - 3540, 220, 20],
 
-      // Top — exit platform
-      [1200,  L3_H - 3960, 300, 22],
+      // Step 3 — safe staging before boss
+      [700,  L3_H - 3620, 260, 20],
+
+      // Tier 14 — boss arena
+      [700,  L3_H - 3680, 900, 24],
+
+      // Top — exit platform, much easier to reach
+      [980,  L3_H - 3820, 320, 22],
     ];
 
     layout.forEach(([x, y, w, h]) => {
@@ -544,39 +550,37 @@ class Level3 extends Phaser.Scene {
     });
   }
 
-  _drawBoss() {
+    _drawBoss() {
     const g = this._bossG;
     const x = this._bossX, y = this._bossY;
     g.clear();
 
-    // Outer glow
-    g.fillStyle(0x4c1d95, 0.18); g.fillCircle(x, y, 72);
-    g.fillStyle(0x7c3aed, 0.14); g.fillCircle(x, y, 56);
+    // Smaller outer glow
+    g.fillStyle(0x4c1d95, 0.14); g.fillCircle(x, y, 46);
+    g.fillStyle(0x7c3aed, 0.10); g.fillCircle(x, y, 34);
 
-    // Orbiting rings
+    // One rotating elliptical ring
     const t = this.time.now * 0.001;
-    for (let r = 0; r < 3; r++) {
-      const angle = t * (0.8 + r * 0.3) + r * (Math.PI * 2 / 3);
-      const rx = Math.cos(angle) * 44;
-      const ry = Math.sin(angle) * 14;
-      g.lineStyle(2, 0x7c3aed, 0.55 - r * 0.12);
-      g.strokeEllipse(x + rx * 0.1, y + ry * 0.1, 88 + r * 12, 28 + r * 4);
-    }
+    const angle = t * 1.1;
+    const rx = Math.cos(angle) * 18;
+    const ry = Math.sin(angle) * 6;
+    g.lineStyle(2, 0x7c3aed, 0.65);
+    g.strokeEllipse(x + rx * 0.1, y + ry * 0.1, 54, 18);
 
-    // Core body
-    g.fillStyle(0x0f0015, 1); g.fillCircle(x, y, 38);
-    g.fillStyle(0x1e003a, 1); g.fillCircle(x, y, 28);
+    // Smaller core
+    g.fillStyle(0x0f0015, 1); g.fillCircle(x, y, 22);
+    g.fillStyle(0x1e003a, 1); g.fillCircle(x, y, 16);
 
-    // Inner void with purple edge
-    g.lineStyle(3, 0xa855f7, 0.85); g.strokeCircle(x, y, 38);
-    g.lineStyle(1.5, 0xd946ef, 0.5); g.strokeCircle(x, y, 28);
+    // Void edge
+    g.lineStyle(2.5, 0xa855f7, 0.85); g.strokeCircle(x, y, 22);
+    g.lineStyle(1.2, 0xd946ef, 0.5); g.strokeCircle(x, y, 16);
 
-    // Alert state — eyes
+    // Alert eyes
     if (this._bossAlert) {
-      g.fillStyle(0xef4444, 0.9); g.fillCircle(x - 10, y - 6, 6);
-      g.fillStyle(0xef4444, 0.9); g.fillCircle(x + 10, y - 6, 6);
-      g.fillStyle(0xffffff, 0.9); g.fillCircle(x - 10, y - 6, 3);
-      g.fillStyle(0xffffff, 0.9); g.fillCircle(x + 10, y - 6, 3);
+      g.fillStyle(0xef4444, 0.9); g.fillCircle(x - 6, y - 3, 3.5);
+      g.fillStyle(0xef4444, 0.9); g.fillCircle(x + 6, y - 3, 3.5);
+      g.fillStyle(0xffffff, 0.9); g.fillCircle(x - 6, y - 3, 1.5);
+      g.fillStyle(0xffffff, 0.9); g.fillCircle(x + 6, y - 3, 1.5);
     }
   }
 
@@ -1040,7 +1044,7 @@ class Level3 extends Phaser.Scene {
 
       // Alert when Joao is near
       const distToJoao = Math.abs(joao.x - this._bossX);
-      this._bossAlert = distToJoao < 220 && joao.y < this._bossY + 200;
+      this._bossAlert = distToJoao < 90 && joao.y < this._bossY + 120;
 
       this._drawBoss();
     }
@@ -1073,7 +1077,7 @@ class Level3 extends Phaser.Scene {
       // Draw the ring
       const wg = this._bossG;  // reuse boss graphics layer is tricky; use separate
       // Actually shockwaves need their own graphics — handled below
-      if (wave.r > 380) {
+      if (wave.r > 200) {
         if (wave.gfx) wave.gfx.destroy();
         return false;
       }
@@ -1082,15 +1086,15 @@ class Level3 extends Phaser.Scene {
         wave.gfx = this.add.graphics().setDepth(7);
       }
       wave.gfx.clear();
-      wave.gfx.lineStyle(3, 0xa855f7, Math.max(0, 1 - wave.r / 380));
+      wave.gfx.lineStyle(2, 0xa855f7, Math.max(0, 1 - wave.r / 220));
       wave.gfx.strokeCircle(wave.x, wave.y, wave.r);
-      wave.gfx.lineStyle(1.5, 0xd946ef, Math.max(0, 0.6 - wave.r / 380));
-      wave.gfx.strokeCircle(wave.x, wave.y, wave.r - 6);
+      wave.gfx.lineStyle(1, 0xd946ef, Math.max(0, 0.5 - wave.r / 220));
+      wave.gfx.strokeCircle(wave.x, wave.y, wave.r - 3);
 
       // Collision — thin annulus check
       if (!invincible && wave.alive) {
         const dist = Phaser.Math.Distance.Between(joao.x, joao.y, wave.x, wave.y);
-        if (dist >= wave.r - 20 && dist <= wave.r + 20) {
+        if (dist >= wave.r - 8 && dist <= wave.r + 8) {
           wave.alive = false;
           this._killJoao();
         }
