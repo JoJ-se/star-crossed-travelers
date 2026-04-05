@@ -554,7 +554,7 @@ class IntroCutscene extends Phaser.Scene {
       onComplete: () => {
         this._showDialogue(
           'Rocky',
-          "Also – space has no gravity, but you'll still need to 'jump' over debris. Don't ask why. It's a game thing. Humans love making up rules.",
+          "Also – space has no gravity, but you'll still need to 'jump' over debris. Don't ask why. It's a game thing... Humans love making up rules.",
           90,
           () => this._beginLevel()
         );
