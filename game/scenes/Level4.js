@@ -858,27 +858,257 @@ class Level4 extends Phaser.Scene {
     if (this._levelComplete) return;
     this._levelComplete   = true;
     this._controlsEnabled = false;
-
-    // Hide touch controls during ending cutscene
     if (window.mobileControls) window.mobileControls.hide();
+    if (this._iceCreamG) this.tweens.killTweensOf(this._iceCreamG);
+    this._runHugCinematic();
+  }
 
-    // Joao slides to a stop
+  // ── Hug cinematic: run → meet → embrace → hold → dialogue
+  _runHugCinematic() {
+    const joaoStopX = 3415;
+    const bichMoveX = 3440;
+    const hugCX     = 3428;
+    const hugCY     = 298;
+
+    // Phase 1: disable physics, tween Joao running toward Bichilin
+    this.joao.body.enable = false;
+    this.joao.setFlipX(false);
     this.tweens.add({
-      targets: this.joao.body.velocity,
-      x: 0,
-      duration: 900,
-      ease: 'Sine.easeOut',
+      targets: this.joao,
+      x: joaoStopX,
+      duration: 950,
+      ease: 'Cubic.easeOut',
     });
 
-    // Camera stops following, stays on the reunion
-    this.cameras.main.stopFollow();
+    // Phase 2: Bichilin steps toward him (350ms in)
+    this.time.delayedCall(350, () => {
+      this.tweens.add({
+        targets: this._bichilinSprite,
+        x: bichMoveX,
+        duration: 700,
+        ease: 'Sine.easeOut',
+      });
+    });
 
-    // Ice cream stops floating, drifts between them
-    if (this._iceCreamG) {
-      this.tweens.killTweensOf(this._iceCreamG);
+    // Phase 3: Embrace fires at 1050ms
+    this.time.delayedCall(1050, () => {
+      // Camera stops following, pans to embrace + zooms in
+      this.cameras.main.stopFollow();
+      this.cameras.main.pan(hugCX, hugCY, 1100, 'Sine.easeOut');
+      this.cameras.main.zoomTo(1.22, 2600, 'Sine.easeInOut');
+
+      // Sprites fade out, hug composite fades in
+      this.tweens.add({
+        targets: [this.joao, this._bichilinSprite],
+        alpha: 0, duration: 220, ease: 'Sine.easeOut',
+      });
+      this._drawHugComposite(hugCX, hugCY);
+
+      // Aurora intensifies during embrace
+      this._intensifyAurora();
+
+      // Floating particles
+      this._spawnHugParticles(hugCX, hugCY);
+    });
+
+    // Phase 4: Dialogue begins after 3200ms of holding the embrace
+    this.time.delayedCall(4250, () => this._runEndingDialogue());
+  }
+
+  // ── Draw both astronauts in embrace pose using layered Phaser graphics
+  _drawHugComposite(cx, cy) {
+    const jx = cx - 18;  // Joao body center x
+    const bx = cx + 14;  // Bichilin body center x
+
+    // ── Outer warm glow — radiates behind both figures
+    const gGlow = this.add.graphics().setDepth(11).setAlpha(0);
+    gGlow.fillStyle(0xfcd34d, 0.13); gGlow.fillCircle(cx, cy, 140);
+    gGlow.fillStyle(0xf9a8d4, 0.11); gGlow.fillCircle(cx, cy, 108);
+    gGlow.fillStyle(0xa78bfa, 0.09); gGlow.fillCircle(cx, cy,  78);
+    gGlow.fillStyle(0xffffff, 0.08); gGlow.fillCircle(cx, cy,  50);
+    this.tweens.add({ targets: gGlow, alpha: 1, duration: 700, ease: 'Sine.easeOut' });
+    // Breathing pulse
+    this.tweens.add({
+      targets: gGlow,
+      alpha: { from: 0.82, to: 1.0 },
+      scaleX: { from: 0.93, to: 1.07 },
+      scaleY: { from: 0.93, to: 1.07 },
+      duration: 2200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+    });
+
+    // ── Wrap arms — drawn at depth 12 so both bodies (13/14) hide the middle section,
+    //    leaving only the forearms + gloves peeking out from each other's far side
+    const gArms = this.add.graphics().setDepth(12).setAlpha(0);
+    const JW = 0xe8edf5, JB = 0xbdc6d4, JP = 0x6366f1;
+    const BW = 0xfce7f3, BB = 0xfbcfe8, BP = 0xa78bfa;
+
+    // Joao's right arm wrapping around Bichilin's back
+    gArms.fillStyle(JW, 1);
+    gArms.fillRoundedRect(jx + 14, cy - 14, bx - jx + 10, 12, 4); // horizontal across
+    gArms.lineStyle(1.5, JB, 1);
+    gArms.strokeRoundedRect(jx + 14, cy - 14, bx - jx + 10, 12, 4);
+    gArms.fillStyle(JW, 1);
+    gArms.fillRoundedRect(bx + 14, cy - 14, 11, 28, 4);             // forearm down
+    gArms.lineStyle(1.5, JB, 1);
+    gArms.strokeRoundedRect(bx + 14, cy - 14, 11, 28, 4);
+    gArms.fillStyle(JP, 1); gArms.fillEllipse(bx + 20, cy + 16, 15, 11); // glove peek
+
+    // Bichilin's left arm wrapping around Joao's back
+    gArms.fillStyle(BW, 1);
+    gArms.fillRoundedRect(jx - 24, cy - 14, bx - jx + 10, 12, 4); // horizontal across
+    gArms.lineStyle(1.5, BB, 1);
+    gArms.strokeRoundedRect(jx - 24, cy - 14, bx - jx + 10, 12, 4);
+    gArms.fillStyle(BW, 1);
+    gArms.fillRoundedRect(jx - 27, cy - 14, 11, 28, 4);             // forearm down
+    gArms.lineStyle(1.5, BB, 1);
+    gArms.strokeRoundedRect(jx - 27, cy - 14, 11, 28, 4);
+    gArms.fillStyle(BP, 1); gArms.fillEllipse(jx - 21, cy + 16, 15, 11); // glove peek
+
+    this.tweens.add({ targets: gArms, alpha: 1, duration: 460, ease: 'Sine.easeOut' });
+
+    // ── Joao's body without his right arm (that's in gArms wrapping behind Bichilin)
+    const gJoao = this.add.graphics().setDepth(13).setAlpha(0);
+    gJoao.fillStyle(JB, 1); gJoao.fillRoundedRect(jx - 6, cy - 14, 12, 24, 3);  // tank
+    gJoao.fillStyle(JW, 1); gJoao.fillRoundedRect(jx - 18, cy - 18, 36, 34, 6); // torso
+    gJoao.lineStyle(2, JB, 1); gJoao.strokeRoundedRect(jx - 18, cy - 18, 36, 34, 6);
+    gJoao.fillStyle(JP, 1); gJoao.fillRoundedRect(jx - 8, cy - 12, 16, 12, 2);  // chest panel
+    gJoao.fillStyle(0xfcd34d, 1); gJoao.fillCircle(jx - 3, cy - 7, 2);
+    gJoao.fillStyle(0xf87171, 1); gJoao.fillCircle(jx + 3, cy - 7, 2);
+    gJoao.fillStyle(0x6ee7b7, 1); gJoao.fillCircle(jx,     cy - 7, 2);
+    gJoao.fillStyle(JW, 1); gJoao.fillRoundedRect(jx - 28, cy - 16, 12, 28, 4); // left arm (outer)
+    gJoao.lineStyle(2, JB, 1); gJoao.strokeRoundedRect(jx - 28, cy - 16, 12, 28, 4);
+    gJoao.fillStyle(JP, 1); gJoao.fillEllipse(jx - 22, cy + 14, 14, 10);
+    gJoao.fillStyle(JW, 1); gJoao.fillRoundedRect(jx - 16, cy + 16, 12, 24, 3); // left leg
+    gJoao.lineStyle(2, JB, 1); gJoao.strokeRoundedRect(jx - 16, cy + 16, 12, 24, 3);
+    gJoao.fillStyle(JP, 1); gJoao.fillRoundedRect(jx - 19, cy + 38, 18, 8, 3);
+    gJoao.fillStyle(JW, 1); gJoao.fillRoundedRect(jx + 4,  cy + 16, 12, 24, 3); // right leg
+    gJoao.lineStyle(2, JB, 1); gJoao.strokeRoundedRect(jx + 4,  cy + 16, 12, 24, 3);
+    gJoao.fillStyle(JP, 1); gJoao.fillRoundedRect(jx + 1,  cy + 38, 18, 8, 3);
+    this.tweens.add({ targets: gJoao, alpha: 1, duration: 460, ease: 'Sine.easeOut' });
+
+    // ── Bichilin's body without her left arm (that's in gArms wrapping behind Joao)
+    const gBich = this.add.graphics().setDepth(14).setAlpha(0);
+    gBich.fillStyle(BB, 1); gBich.fillRoundedRect(bx - 6, cy - 14, 12, 24, 3);  // tank
+    gBich.fillStyle(BW, 1); gBich.fillRoundedRect(bx - 18, cy - 18, 36, 34, 6); // torso
+    gBich.lineStyle(2, BB, 1); gBich.strokeRoundedRect(bx - 18, cy - 18, 36, 34, 6);
+    gBich.fillStyle(BP, 1); gBich.fillRoundedRect(bx - 8, cy - 12, 16, 12, 2);  // chest panel
+    gBich.fillStyle(0xfcd34d, 1); gBich.fillCircle(bx - 3, cy - 7, 2);
+    gBich.fillStyle(0xf9a8d4, 1); gBich.fillCircle(bx + 3, cy - 7, 2);
+    gBich.fillStyle(0x6ee7b7, 1); gBich.fillCircle(bx,     cy - 7, 2);
+    gBich.fillStyle(BW, 1); gBich.fillRoundedRect(bx + 16, cy - 16, 12, 28, 4); // right arm (outer)
+    gBich.lineStyle(2, BB, 1); gBich.strokeRoundedRect(bx + 16, cy - 16, 12, 28, 4);
+    gBich.fillStyle(BP, 1); gBich.fillEllipse(bx + 22, cy + 14, 14, 10);
+    gBich.fillStyle(BW, 1); gBich.fillRoundedRect(bx - 16, cy + 16, 12, 24, 3); // left leg
+    gBich.lineStyle(2, BB, 1); gBich.strokeRoundedRect(bx - 16, cy + 16, 12, 24, 3);
+    gBich.fillStyle(BP, 1); gBich.fillRoundedRect(bx - 19, cy + 38, 18, 8, 3);
+    gBich.fillStyle(BW, 1); gBich.fillRoundedRect(bx + 4,  cy + 16, 12, 24, 3); // right leg
+    gBich.lineStyle(2, BB, 1); gBich.strokeRoundedRect(bx + 4,  cy + 16, 12, 24, 3);
+    gBich.fillStyle(BP, 1); gBich.fillRoundedRect(bx + 1,  cy + 38, 18, 8, 3);
+    this.tweens.add({ targets: gBich, alpha: 1, duration: 460, ease: 'Sine.easeOut' });
+
+    // ── Helmets — on top of everything, helmets almost touching
+    const gHelm = this.add.graphics().setDepth(15).setAlpha(0);
+    const JV = 0xf59e0b, BV = 0x93c5fd;
+    // Joao's helmet (amber visor)
+    gHelm.fillStyle(JW, 1); gHelm.fillCircle(jx, cy - 28, 20);
+    gHelm.lineStyle(2, JB, 1); gHelm.strokeCircle(jx, cy - 28, 20);
+    gHelm.fillStyle(JV, 1); gHelm.fillEllipse(jx, cy - 28, 26, 20);
+    gHelm.fillStyle(0xffffff, 0.55); gHelm.fillEllipse(jx - 5, cy - 32, 8, 6);
+    // Bichilin's helmet (blue visor)
+    gHelm.fillStyle(BW, 1); gHelm.fillCircle(bx, cy - 28, 20);
+    gHelm.lineStyle(2, BB, 1); gHelm.strokeCircle(bx, cy - 28, 20);
+    gHelm.fillStyle(BV, 1); gHelm.fillEllipse(bx, cy - 28, 26, 20);
+    gHelm.fillStyle(0xffffff, 0.55); gHelm.fillEllipse(bx + 5, cy - 32, 8, 6);
+    // Sparkle where helmets almost touch
+    gHelm.fillStyle(0xffffff, 0.9); gHelm.fillCircle(cx - 2, cy - 30, 2.5);
+    gHelm.fillStyle(0xfcd34d, 0.7); gHelm.fillCircle(cx - 2, cy - 30, 6);
+    this.tweens.add({ targets: gHelm, alpha: 1, duration: 460, ease: 'Sine.easeOut' });
+
+    // ── Gentle breathing sway on all hug elements (starts after fade-in)
+    this.time.delayedCall(600, () => {
+      [gArms, gJoao, gBich, gHelm].forEach(g => {
+        this.tweens.add({
+          targets: g,
+          y: { from: 0, to: -3 },
+          duration: 1950,
+          yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+        });
+      });
+    });
+  }
+
+  // ── Aurora intensification overlay — screen-space, fades in during embrace
+  _intensifyAurora() {
+    const W = this.scale.width;
+    const H = this.scale.height;
+    const overlay = this.add.graphics().setScrollFactor(0).setDepth(10).setAlpha(0);
+
+    // Vertical curtain bands in palette colors
+    const bands = [
+      [0,        H * 0.50, W * 0.18, H * 0.50, 0x67e8f9, 0.30],
+      [W * 0.10, H * 0.35, W * 0.24, H * 0.65, 0xa78bfa, 0.24],
+      [W * 0.32, H * 0.30, W * 0.20, H * 0.70, 0x34d399, 0.22],
+      [W * 0.52, H * 0.38, W * 0.26, H * 0.62, 0xf9a8d4, 0.26],
+      [W * 0.76, H * 0.48, W * 0.24, H * 0.52, 0x67e8f9, 0.28],
+    ];
+    bands.forEach(([x, y, w, h, col, a]) => {
+      overlay.fillStyle(col, a);
+      overlay.fillRect(x, y, w, h);
+      overlay.fillStyle(col, a * 0.45);
+      overlay.fillRect(x + w * 0.28, y - H * 0.06, w * 0.44, h + H * 0.06);
+    });
+    // Warm gold bloom at center
+    overlay.fillStyle(0xfcd34d, 0.055); overlay.fillRect(W * 0.2, 0, W * 0.6, H);
+    overlay.fillStyle(0xf9a8d4, 0.040); overlay.fillRect(W * 0.3, 0, W * 0.4, H);
+
+    this.tweens.add({ targets: overlay, alpha: 1, duration: 1600, ease: 'Sine.easeOut' });
+    // Gentle shimmer
+    this.tweens.add({
+      targets: overlay,
+      alpha: { from: 0.82, to: 1.0 },
+      duration: 2400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+    });
+  }
+
+  // ── Floating star / heart particles rising from the embrace
+  _spawnHugParticles(cx, cy) {
+    const colors = [0xfcd34d, 0xf9a8d4, 0xa78bfa, 0x67e8f9, 0xffffff];
+
+    for (let i = 0; i < 14; i++) {
+      this.time.delayedCall(i * 240 + 200, () => {
+        const px = cx + Phaser.Math.Between(-55, 55);
+        const py = cy + Phaser.Math.Between(-10, 30);
+        const col = colors[i % colors.length];
+        const r   = Phaser.Math.FloatBetween(2.5, 5);
+        const riseH = Phaser.Math.Between(62, 105);
+
+        // Graphics origin at particle position so scale tweens work correctly
+        const p = this.add.graphics({ x: px, y: py }).setDepth(16).setAlpha(0);
+
+        if (i % 3 === 0) {
+          // Cross / star
+          p.fillStyle(col, 0.9);
+          p.fillRect(-1, -5, 2, 10);
+          p.fillRect(-5, -1, 10, 2);
+        } else {
+          // Circle
+          p.fillStyle(col, 0.85);
+          p.fillCircle(0, 0, r);
+        }
+
+        // Fade in quickly, then float up and fade out
+        this.tweens.add({ targets: p, alpha: 0.9, duration: 200 });
+        this.tweens.add({
+          targets: p,
+          y: py - riseH,
+          alpha: 0,
+          duration: Phaser.Math.Between(1600, 2500),
+          delay: 160,
+          ease: 'Sine.easeOut',
+          onComplete: () => { try { p.destroy(); } catch (e) {} },
+        });
+      });
     }
-
-    this.time.delayedCall(1200, () => this._runEndingDialogue());
   }
 
   _runEndingDialogue() {
