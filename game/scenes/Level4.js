@@ -956,7 +956,7 @@ class Level4 extends Phaser.Scene {
 
     // Mobile touch controls
     if (window.mobileControls && window.mobileControls.isTouch) {
-      window.mobileControls.show();
+      window.mobileControls.show(this);
       this.events.once('shutdown', () => window.mobileControls.hide());
     }
   }
