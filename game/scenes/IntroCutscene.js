@@ -215,7 +215,7 @@ class IntroCutscene extends Phaser.Scene {
   { text: 'A cosmic storm tore through the galaxy without warning.', size: '18px', color: '#94a3b8', y: H * 0.22 },
   { text: "Joao and Elina's ship split in two.", size: '21px', color: '#cbd5e1', y: H * 0.33 },
   { text: 'She drifted toward the legendary Ice-Cream Planet — ice cream in hand, completely unbothered.', size: '16px', color: '#94a3b8', y: H * 0.44 },
-  { text: 'Classic Elina.', size: '26px', color: '#fcd34d', y: H * 0.57 },
+  { text: 'Classic Elina.', size: '21px', color: '#cbd5e1', y: H * 0.33 },
   { text: 'He has to find her.', size: '26px', color: '#fcd34d', y: H * 0.67 },
 ];
 
