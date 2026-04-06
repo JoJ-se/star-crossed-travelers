@@ -76,7 +76,7 @@ class Level4 extends Phaser.Scene {
       if (!this._welcomeDone) {
         this._welcomeDone = true;
         this._queueRocky(
-          "Here we are - Frozen moon aka Ice-cream planet. Cold. Slippery. She better be worth it.",
+          "Here we are - Frozen moon aka Ice-cream planet. Cold. Slippery. I bet your girl could use a hug.",
           4500
         );
       }
@@ -302,7 +302,7 @@ class Level4 extends Phaser.Scene {
     if (!this._firstCrackDone) {
       this._firstCrackDone = true;
       this.time.delayedCall(400, () => {
-        this._queueRocky("'Elsa' and 'Olaf' exploring the Frozen moon...this is basically a live-action seque!", 4000);
+        this._queueRocky("I will call you two 'Elsa' and 'Olaf' exploring the Frozen moon...this is basically a live-action seque!", 4000);
       });
     }
 
@@ -1139,7 +1139,7 @@ class Level4 extends Phaser.Scene {
             // 4. Joao
             this._showEndingDialogue('joao', "(-3-)", 1400, () => {
               // 5. Bichilin
-              this._showEndingDialogue('bichilin', ".....Now...do you want to flight to earth to grab some Macdonalds..?", 1800, () => {
+              this._showEndingDialogue('bichilin', ".....Now...do you wanna fly back to Earth and grab some Mcdonalds..?", 1800, () => {
                 // 6. Joao
                 this._showEndingDialogue('joao', "Bichilin.....", 1800, () => {
                   // Rocky — four messages
@@ -1182,7 +1182,7 @@ class Level4 extends Phaser.Scene {
         this._rockyNameText.setDepth(61);
         this._rockyBodyText.setDepth(61);
 
-        this._showRockyCentered("And, humans.... what is a 'Macdonalds'?", 2000, () => {
+        this._showRockyCentered("And, humans.... what is a 'Mcdonalds'?", 2000, () => {
           this._showRockyCentered("Is it a kind of Space potato?", 2000, () => {
             // Game ends — stay on black
           });
@@ -1316,7 +1316,7 @@ class Level4 extends Phaser.Scene {
     if (this._deathCount === 1 && !this._firstDeathDone) {
       this._firstDeathDone = true;
       this.time.delayedCall(600, () => {
-        this._queueRocky("Every step's a slide - just like trying to get her to open up sometimes.", 4000);
+        this._queueRocky("Every step's a slide - just like trying to get Elina to open up sometimes.", 4000);
       });
     }
 
@@ -1383,7 +1383,7 @@ class Level4 extends Phaser.Scene {
     // ── Rocky position triggers
     if (!this._halfwayDone && joao.x > 1800) {
       this._halfwayDone = true;
-      this._queueRocky("Cold air - my circuits are freezing up...but thinking about her keeps me warm.", 4500);
+      this._queueRocky("Cold enough to freeze time...reminds me of that winter in BJ when you didn't want to leave her side.", 4500);
     }
 
     // ── Geyser collision check
