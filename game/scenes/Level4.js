@@ -76,7 +76,7 @@ class Level4 extends Phaser.Scene {
       if (!this._welcomeDone) {
         this._welcomeDone = true;
         this._queueRocky(
-          "Slippery. Cold. Cracking platforms. She better be worth it.",
+          "Here we are - Frozen moon aka Ice-cream planet. Cold. Slippery. She better be worth it.",
           4500
         );
       }
@@ -302,7 +302,7 @@ class Level4 extends Phaser.Scene {
     if (!this._firstCrackDone) {
       this._firstCrackDone = true;
       this.time.delayedCall(400, () => {
-        this._queueRocky("That platform is leaving. Might want to keep moving.", 4000);
+        this._queueRocky("'Elsa' and 'Olaf' exploring the Frozen moon...this is basically a live-action seque!", 4000);
       });
     }
 
@@ -1316,7 +1316,7 @@ class Level4 extends Phaser.Scene {
     if (this._deathCount === 1 && !this._firstDeathDone) {
       this._firstDeathDone = true;
       this.time.delayedCall(600, () => {
-        this._queueRocky("Humans... I swear you have the survival instincts of a space potato.", 4000);
+        this._queueRocky("Every step's a slide - just like trying to get her to open up sometimes.", 4000);
       });
     }
 
@@ -1383,7 +1383,7 @@ class Level4 extends Phaser.Scene {
     // ── Rocky position triggers
     if (!this._halfwayDone && joao.x > 1800) {
       this._halfwayDone = true;
-      this._queueRocky("...She is, isn't she. Keep going.", 4500);
+      this._queueRocky("Cold air - my circuits are freezing up...but thinking about her keeps me warm.", 4500);
     }
 
     // ── Geyser collision check
