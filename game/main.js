@@ -21,7 +21,7 @@ window.startGame = function () {
         debug: false,
       },
     },
-     scene: [Level2],
+     scene: [Level2, Level3, CosmicTeaPlanet, Level4],
   };
 
   new Phaser.Game(config);
