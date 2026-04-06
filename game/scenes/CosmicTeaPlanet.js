@@ -635,24 +635,25 @@ class CosmicTeaPlanet extends Phaser.Scene {
             flash.fillRect(0, 0, this._W, this._H);
             this.tweens.add({ targets: flash, alpha: 0, duration: 500, onComplete: () => flash.destroy() });
 
-            // Asteroid falls
+            // Asteroid + Rocky fire simultaneously — Rocky's bubble appears
+            // at the exact same moment the asteroid enters the screen
             this._dropAsteroid(() => {
-              // Rocky panics FIRST — he sees it before Big Brother reacts
-              this._queueRocky("Human! The asteroid — WE HAVE TO GO!!", 2500, () => {
-                // THEN Big Brother looks up in mock horror
-                this._showBBDialogue(
-                  "…WHAT IN THE NAME OF THE EMPEROR IS THAT?!",
-                  () => {
-                    this._showBBDialogue(
-                      "An asteroid! Direct hit to my tea garden! And the wormhole to Elina's planet just collapsed! Next time, choose faster — or we'll both be buried under asteroid dust and dumpling wrappers!",
-                      () => {
-                        this._showMissionFailed();
-                      }
-                    );
-                  }
-                );
-              });
+              // Asteroid has landed — now Big Brother reacts (Rocky already speaking)
+              this._showBBDialogue(
+                "…WHAT IN THE NAME OF THE EMPEROR IS THAT?!",
+                () => {
+                  this._showBBDialogue(
+                    "An asteroid! Direct hit to my tea garden! And the wormhole to Elina's planet just collapsed! Next time, choose faster — or we'll both be buried under asteroid dust and dumpling wrappers!",
+                    () => {
+                      this._showMissionFailed();
+                    }
+                  );
+                }
+              );
             });
+
+            // Rocky fires at the same time the asteroid drop begins
+            this._queueRocky("Human! The asteroid — WE HAVE TO GO!!", 2500);
           }
         );
       }
