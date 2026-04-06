@@ -182,8 +182,6 @@ class IntroCutscene extends Phaser.Scene {
     box.lineStyle(1, 0xfcd34d, 0.25);
     box.strokeRoundedRect(panelX+3, panelY+3, panelW-6, panelH-6, 8);
 
-    const dpr = window.devicePixelRatio || 1;
-
     const nameText = this.add.text(panelX + 22, panelY + 16, speaker + ':', {
       fontSize: isMobile ? '12px' : '13px',
       fontFamily: 'Arial, sans-serif',
