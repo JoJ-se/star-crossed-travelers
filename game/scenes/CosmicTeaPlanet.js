@@ -489,10 +489,10 @@ class CosmicTeaPlanet extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────────────────
   _phase2Greeting() {
     this._showBBDialogue(
-      "AH! A traveler falls from the stars and lands at my table! Welcome, young Joao — I am Big Brother. The galaxy's most generous host, and its most patient chess partner.",
+      "AH! A traveler falls from the stars and lands at my table! Welcome, young Zhong — I am Big Brother. The galaxy's most generous host, and its most patient chess partner.",
       () => {
         this._showBBDialogue(
-          "Come — sit. I have oolong tea, fresh dumplings, and a chess set that hasn't been touched in three weeks. I was going to keep you for three years minimum — but perhaps we start with tea.",
+          "Come — sit. I have oolong tea, fresh dumplings, and a chess set that hasn't been touched in years.",
           () => this._showChoiceButtons()
         );
       }
@@ -588,14 +588,14 @@ class CosmicTeaPlanet extends Phaser.Scene {
       "HA! I knew you'd choose wisely — even a blind man could see where your heart truly lies.",
       () => {
         this._showBBDialogue(
-          "In the ancient art of Chinese chess, the chariot moves straight across the board — no detours, no second-guessing. That is you today: clear of purpose, steady of path. My door is always open, my dumplings always hot.",
+          "Let me tell you something, Zhong. In the ancient art of Chinese chess, the chariot moves straight across the board — no detours, no second-guessing. That is you today: clear of purpose, steady of path.",
           () => {
             this._showBBDialogue(
-              "Go now. The stars are aligned. And Joao? If you're late because you got distracted by space rocks — I'll hear about it. I have eyes everywhere.",
+              "Go now. The stars are aligned. And Zhong? Sister in law says ' You two should eat less ice-cream' You know, she has eyes everywhere..",
               () => {
                 // Rocky reacts, then proceed to Level 4
                 this._queueRocky(
-                  "This Big Brother speaks in circles — but his heart is in the right place.",
+                  "This Big Brother speaks in riddles — but his heart is in the right place.",
                   4500,
                   () => {
                     this.time.delayedCall(600, () => {
@@ -621,10 +621,10 @@ class CosmicTeaPlanet extends Phaser.Scene {
     this._destroyChoiceButtons();
 
     this._showBBDialogue(
-      "AH! Now THIS is what I like to see — a young man who knows the value of good company! I was just about to pull out my finest oolong tea and the chess set we've been playing for three years straight.",
+      "AH! Now THIS is what I like to see — a young man who knows the value of good company! I was just about to pull out my finest oolong tea set i've prepared for you.",
       () => {
         this._showBBDialogue(
-          "I've even got those pork dumplings you love — the ones with ginger and scallions that make you say 'Big Brother, you're spoiling me!' We could talk for hours about everything and nothing — the stars, philosophy, why Beijing's traffic is both a curse and a blessing…",
+          "I've even got those pork dumplings you love! We could talk for hours about everything and nothing — the stars, philosophy, why Beijing's traffic is both a curse and a blessing…",
           () => {
             // RUMBLE — screen shake + asteroid drop
             this.cameras.main.shake(700, 0.022);
@@ -643,7 +643,7 @@ class CosmicTeaPlanet extends Phaser.Scene {
                 "…WHAT IN THE NAME OF THE EMPEROR IS THAT?!",
                 () => {
                   this._showBBDialogue(
-                    "An asteroid! Direct hit to my tea garden! And the wormhole to Elina's planet just collapsed! Next time, choose faster — or we'll both be buried under asteroid dust and dumpling wrappers!",
+                    "AN ASTEROID! Direct hit to my tea garden! And the shortcut to Elina's planet just collapsed! Next time, choose wisely — or we'll both be buried under tea dust and dumpling wrappers!",
                     () => {
                       this._showMissionFailed();
                     }
