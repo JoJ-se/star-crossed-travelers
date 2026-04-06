@@ -299,7 +299,7 @@ class Level2 extends Phaser.Scene {
     if (!this._firstBeaconDone) {
       this._firstBeaconDone = true;
       this.time.delayedCall(200, () => {
-        this._queueRocky("Light it up. Smart. Perfectionista.", 4000);
+        this._queueRocky("Light it up. Smart move. Perfectionista.", 4000);
       });
     }
   }
@@ -829,7 +829,7 @@ class Level2 extends Phaser.Scene {
         );
         if (!this._firstCurrentDone) {
           this._firstCurrentDone = true;
-          this._queueRocky("That one was harsh!..But BJ goodbye way worse, am i right?.", 4000);
+          this._queueRocky("That one was harsh!..But Beijing goodbye way worse, right?.", 4000);
         }
       }
     });
@@ -852,13 +852,9 @@ class Level2 extends Phaser.Scene {
     }
 
     // ── Position-based Rocky triggers
-    if (!this._midJoke1Done && joao.x > 1200) {
-      this._midJoke1Done = true;
-      this._queueRocky("Nice one - that platform was hiding in plain sight.", 5200);
-    }
     if (!this._midJoke2Done && joao.x > 2000) {
       this._midJoke2Done = true;
-      this._queueRocky("Before Earth, she never smiled like she does now.", 4000);
+      this._queueRocky("Cool move! Picked that up in jiujitsu?", 4000);
     }
    
     // ── Fall off world
