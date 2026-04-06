@@ -799,10 +799,19 @@ class CosmicTeaPlanet extends Phaser.Scene {
   _showBBDialogue(text, onDone) {
     const W   = this._W, H = this._H;
     const dpr = window.devicePixelRatio || 1;
+    const isMobile = W < 600;
+    const bodyFont = isMobile ? '15px' : '16px';
 
     const panelW = Math.min(700, W - 28);
     const panelX = 14;
-    const panelH = 140;
+    // Dynamic panel height based on text content
+    const probe = this.add.text(-9999, -9999, text, {
+      fontSize: bodyFont, fontFamily: 'Georgia, serif',
+      fontStyle: 'bold', resolution: dpr,
+      wordWrap: { width: panelW - 118 }, lineSpacing: 5,
+    }).setVisible(false);
+    const panelH = Math.max(130, 16 + 20 + 6 + probe.height + 22);
+    probe.destroy();
     const mcBottom = (window.mobileControls ? window.mobileControls.reservedBottom : 0);
     const panelY = H - panelH - 14 - mcBottom;
 
@@ -841,7 +850,7 @@ class CosmicTeaPlanet extends Phaser.Scene {
     }).setDepth(41).setAlpha(0);
 
     const bodyText = this.add.text(tx, panelY + 38, '', {
-      fontSize: '16px', fontFamily: 'Arial, sans-serif',
+      fontSize: bodyFont, fontFamily: 'Georgia, serif',
       color: '#e2e8f0', fontStyle: 'bold', resolution: dpr,
       wordWrap: { width: panelW - 118 }, lineSpacing: 5,
     }).setDepth(41).setAlpha(0);
@@ -935,9 +944,18 @@ class CosmicTeaPlanet extends Phaser.Scene {
 
   _showRocky(text, holdMs, onComplete) {
     const W      = this._W, H = this._H;
+    const isMobile = W < 600;
+    const dpr = window.devicePixelRatio || 1;
+    const bodyFont = isMobile ? '16px' : '18px';
     const panelW = Math.min(700, W - 28);
     const panelX = 14;
-    const panelH = 130;
+    const probe = this.add.text(-9999, -9999, text, {
+      fontSize: bodyFont, fontFamily: 'Arial, sans-serif',
+      fontStyle: 'bold', resolution: dpr,
+      wordWrap: { width: panelW - 110 }, lineSpacing: 6,
+    }).setVisible(false);
+    const panelH = Math.max(118, 14 + 20 + 6 + probe.height + 16);
+    probe.destroy();
     const mcBottom = (window.mobileControls ? window.mobileControls.reservedBottom : 0);
     const panelY = H - panelH - 14 - mcBottom;
 
@@ -964,6 +982,7 @@ class CosmicTeaPlanet extends Phaser.Scene {
     this._rockyPanel.fillCircle(ax-5, ay-3, 1.5); this._rockyPanel.fillCircle(ax+7, ay-3, 1.5);
 
     const tx = panelX + 104;
+    this._rockyBodyText.setFontSize(bodyFont).setWordWrapWidth(panelW - 110);
     this._rockyNameText.setText('Rocky:').setPosition(tx, panelY + 14).setAlpha(0);
     this._rockyBodyText.setText('').setPosition(tx, panelY + 36).setAlpha(0);
     this._rockyPanel.setAlpha(0);

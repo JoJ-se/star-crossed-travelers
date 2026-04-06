@@ -153,9 +153,19 @@ class IntroCutscene extends Phaser.Scene {
   _showDialogue(speaker, text, msPerWord, onDone) {
     const W = this.scale.width;
     const H = this.scale.height;
+    const dpr = window.devicePixelRatio || 1;
+    const isMobile = W < 600;
+    const bodyFont = isMobile ? '15px' : '17px';
     const panelW = Math.min(W - 40, 900);
     const panelX = (W - panelW) / 2;
-    const panelH = 148;
+    // Dynamic panel height
+    const probe = this.add.text(-9999, -9999, text, {
+      fontSize: bodyFont, fontFamily: 'Georgia, serif',
+      fontStyle: 'bold', resolution: dpr,
+      wordWrap: { width: panelW - 44 }, lineSpacing: 7,
+    }).setVisible(false);
+    const panelH = Math.max(120, 16 + 18 + 8 + probe.height + 22);
+    probe.destroy();
     const panelY = H - panelH - 16;
 
     // Outer glow layer
@@ -175,7 +185,7 @@ class IntroCutscene extends Phaser.Scene {
     const dpr = window.devicePixelRatio || 1;
 
     const nameText = this.add.text(panelX + 22, panelY + 16, speaker + ':', {
-      fontSize: '13px',
+      fontSize: isMobile ? '12px' : '13px',
       fontFamily: 'Arial, sans-serif',
       color: '#fcd34d',
       fontStyle: 'bold',
@@ -184,8 +194,8 @@ class IntroCutscene extends Phaser.Scene {
     }).setDepth(51);
 
     const bodyText = this.add.text(panelX + 22, panelY + 38, '', {
-      fontSize: '17px',
-      fontFamily: 'Arial, sans-serif',
+      fontSize: bodyFont,
+      fontFamily: 'Georgia, serif',
       color: '#dde8f5',
       fontStyle: 'bold',
       wordWrap: { width: panelW - 44 },
@@ -193,10 +203,12 @@ class IntroCutscene extends Phaser.Scene {
       resolution: dpr,
     }).setDepth(51);
 
-    const hint = this.add.text(panelX + panelW - 18, panelY + panelH - 14, 'click / space', {
+    const hint = this.add.text(panelX + panelW - 18, panelY + panelH - 14, 'tap / space', {
       fontSize: '11px',
-      fontFamily: 'Arial',
+      fontFamily: 'Georgia, serif',
+      fontStyle: 'italic',
       color: '#6366f1',
+      resolution: dpr,
       alpha: 0,
     }).setOrigin(1, 1).setDepth(51);
 
