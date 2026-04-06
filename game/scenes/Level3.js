@@ -713,7 +713,7 @@ class Level3 extends Phaser.Scene {
     if (this._deathCount === 1 && !this._firstDeathDone) {
       this._firstDeathDone = true;
       this.time.delayedCall(600, () => {
-        this._queueRocky("Humans... I swear you have the survival instincts of a space potato.", 4000);
+        this._queueRocky("Dust storm coming - hide like you hide from Elina's 'victim jokes'.", 4000);
       });
     }
 
@@ -737,7 +737,7 @@ class Level3 extends Phaser.Scene {
   _completeLevel() {
     this._levelComplete = true;
     this._queueRocky(
-      "Top of an ancient alien tower on Mars. Most humans don't make it past the gift shop.",
+      "All done here! Ready to cross the galaxy for her?",
       6000
     );
 
@@ -819,7 +819,7 @@ class Level3 extends Phaser.Scene {
     if (!this._bossReachedDone && joao.y < L3_H - 3400) {
       this._bossReachedDone = true;
       this._queueRocky(
-        "Okay. That thing is between us and the next planet. Any ideas? ...That's what I thought. I'll distract it, you run.",
+        "And that thing up there. Any ideas? ...yeah, looks like Elina's mood sometimes...Don't tell her i said that",
         6500
       );
     }
