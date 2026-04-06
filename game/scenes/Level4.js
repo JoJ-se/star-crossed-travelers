@@ -762,7 +762,7 @@ class Level4 extends Phaser.Scene {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // ENDING DIALOGUE PANELS — two-speaker system, auto-advance
+  // ENDING DIALOGUE PANELS — screen-space, auto-sizing bubble
   // ─────────────────────────────────────────────────────────────────────────
   _showEndingDialogue(speaker, text, holdMs, onDone) {
     const W   = this.scale.width;
@@ -775,22 +775,36 @@ class Level4 extends Phaser.Scene {
     const nameStr    = isBichilin ? 'Bichilin:'   : 'Joao:';
     const panelBg    = isBichilin ? 0x1a0d14      : 0x0d1425;
 
-    const panelW = Math.min(600, W - 28);
-    const panelH = 120;
-    const panelX = W / 2 - panelW / 2;
+    const AVATAR_AREA = 92;          // pixels reserved on left for avatar
+    const PAD_H       = 16;          // horizontal inner padding on text side
+    const panelW      = Math.min(620, W - 28);
+    const panelX      = W / 2 - panelW / 2;
+    const textAreaW   = panelW - AVATAR_AREA - PAD_H;
+
+    // ── Measure how tall the body text will be so the bubble can self-size
+    const probe = this.add.text(-9999, -9999, text, {
+      fontSize: '16px', fontFamily: 'Arial, sans-serif',
+      fontStyle: 'bold', resolution: dpr,
+      wordWrap: { width: textAreaW }, lineSpacing: 5,
+    }).setScrollFactor(0).setVisible(false);
+    const measuredTextH = probe.height;
+    probe.destroy();
+
+    // Panel height: top pad (14) + name label (18) + gap (6) + body text + bottom pad (18)
+    const panelH  = Math.max(110, 14 + 18 + 6 + measuredTextH + 18);
     const mcBottom = (window.mobileControls ? window.mobileControls.reservedBottom : 0);
-    const panelY = H - panelH - 14 - mcBottom;
+    const panelY  = H - panelH - 14 - mcBottom;
 
     const bg = this.add.graphics().setScrollFactor(0).setDepth(50).setAlpha(0);
     bg.fillStyle(panelBg, 0.95);
     bg.fillRoundedRect(panelX, panelY, panelW, panelH, 12);
     bg.lineStyle(2.5, borderCol, 0.9);
     bg.strokeRoundedRect(panelX, panelY, panelW, panelH, 12);
-    bg.lineStyle(1, isBichilin ? 0xfcb8d4 : 0x60a5fa, 0.30);
+    bg.lineStyle(1, isBichilin ? 0xfcb8d4 : 0x60a5fa, 0.28);
     bg.strokeRoundedRect(panelX + 3, panelY + 3, panelW - 6, panelH - 6, 10);
 
-    // Small avatar
-    const ax = panelX + 48, ay = panelY + 58;
+    // Avatar — vertically centered in the panel
+    const ax = panelX + 46, ay = panelY + panelH / 2 - 4;
     if (isBichilin) {
       bg.fillStyle(0xfce7f3, 0.9); bg.fillCircle(ax, ay - 6, 16);
       bg.lineStyle(1.5, 0xfbcfe8, 0.8); bg.strokeCircle(ax, ay - 6, 16);
@@ -803,16 +817,16 @@ class Level4 extends Phaser.Scene {
       bg.fillStyle(0xe8edf5, 0.6); bg.fillRoundedRect(ax - 14, ay + 8, 28, 20, 4);
     }
 
-    const tx = panelX + 88;
+    const tx = panelX + AVATAR_AREA;
     const nameText = this.add.text(tx, panelY + 14, nameStr, {
       fontSize: '14px', fontFamily: 'Arial, sans-serif',
       color: nameCol, fontStyle: 'bold', resolution: dpr,
     }).setScrollFactor(0).setDepth(51).setAlpha(0);
 
-    const bodyText = this.add.text(tx, panelY + 34, '', {
+    const bodyText = this.add.text(tx, panelY + 38, '', {
       fontSize: '16px', fontFamily: 'Arial, sans-serif',
       color: '#e2e8f0', fontStyle: 'bold', resolution: dpr,
-      wordWrap: { width: panelW - 98 }, lineSpacing: 5,
+      wordWrap: { width: textAreaW }, lineSpacing: 5,
     }).setScrollFactor(0).setDepth(51).setAlpha(0);
 
     const all = [bg, nameText, bodyText];
@@ -1112,58 +1126,90 @@ class Level4 extends Phaser.Scene {
   }
 
   _runEndingDialogue() {
-    // Bichilin line 1
-    this._showEndingDialogue('bichilin', "I saved the ice cream for you.", 1400, () => {
-      // Joao response
-      this._showEndingDialogue('joao', "You could've eaten it, Bichilin.", 1400, () => {
-        // Bichilin line 2
-        this._showEndingDialogue('bichilin', "...we always do it together.", 2800, () => {
-          // Rocky — three messages with pauses
-          this._queueRocky(
-            "Four planets. A debris field, a nebula, an ancient Martian structure, a philosophical Chinese man, and an asteroid. All of that — for ice cream and a hug.",
-            5500
-          );
-          this._queueRocky(
-            "...Humans are absolutely insane.",
-            5000
-          );
-          this._queueRocky(
-            "...I'd do it again though.",
-            4500,
-            () => this._runCredits()
-          );
+    // Reset camera zoom to 1.0 immediately so all screen-space panels
+    // render at the correct scale (zoom 1.22 from the hug cinematic would
+    // scale even setScrollFactor(0) objects and push them off-screen).
+    this.cameras.main.zoomTo(1.0, 550, 'Sine.easeInOut');
+
+    // Start dialogue after zoom finishes
+    this.time.delayedCall(600, () => {
+      // 1. Elina
+      this._showEndingDialogue('bichilin', "Joao! I saved the ice cream for you.", 1400, () => {
+        // 2. Joao
+        this._showEndingDialogue('joao', "You should have eaten it, Bichilin...", 1400, () => {
+          // 3. Elina
+          this._showEndingDialogue('bichilin', "...But...we always do it together.", 1400, () => {
+            // 4. Joao
+            this._showEndingDialogue('joao', "(-3-)", 1400, () => {
+              // 5. Elina
+              this._showEndingDialogue('bichilin', "Now...do you want to flight to earth to grab some Macdonalds..?", 1800, () => {
+                // Rocky — four messages
+                this._queueRocky(
+                  "Four planets. A debris field, a nebula, an ancient Martian structure, a philosophical Chinese man, and an asteroid. All of that — for ice cream and a hug.",
+                  5500
+                );
+                this._queueRocky("...Humans are absolutely insane.", 4500);
+                this._queueRocky("...I'd do it again though.", 4000);
+                this._queueRocky(
+                  "It is always the best time! When we are together.",
+                  4500,
+                  () => this._runCredits()
+                );
+              });
+            });
+          });
         });
       });
     });
   }
 
   _runCredits() {
-    const W   = this.scale.width;
-    const H   = this.scale.height;
-    const dpr = window.devicePixelRatio || 1;
-
-    // Fade to dark
+    // Fade to black — camera is already at zoom 1.0 at this point
     this.cameras.main.fadeOut(1400, 3, 7, 18);
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      // "The End" text
-      const endText = this.add.text(W / 2, H / 2 - 20, 'The End', {
-        fontSize: '52px', fontFamily: 'Georgia, serif',
-        color: '#fcd34d', fontStyle: 'italic',
-        stroke: '#030712', strokeThickness: 4,
+      const W   = this.scale.width;
+      const H   = this.scale.height;
+      const dpr = window.devicePixelRatio || 1;
+
+      const lineStyle = {
+        fontFamily: 'Georgia, serif',
+        fontStyle:  'italic',
+        align:      'center',
         resolution: dpr,
+        wordWrap:   { width: Math.min(W * 0.82, 560) },
+        lineSpacing: 8,
+      };
+
+      // Rocky's first post-credits line types out on the black screen
+      const msg1 = this.add.text(W / 2, H / 2 - 28, '', {
+        ...lineStyle,
+        fontSize: '21px',
+        color:    '#9ca3af',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
 
-      const subText = this.add.text(W / 2, H / 2 + 40, 'Star Crossed Travelers', {
-        fontSize: '18px', fontFamily: 'Arial, sans-serif',
-        color: '#93c5fd', fontStyle: 'bold',
-        resolution: dpr,
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
+      this.tweens.add({ targets: msg1, alpha: 1, duration: 700, ease: 'Sine.easeOut' });
 
-      this.tweens.add({
-        targets: [endText, subText],
-        alpha: 1,
-        duration: 1800,
-        ease: 'Sine.easeOut',
+      this._typeWords(msg1, "And, humans.... what is a 'Macdonalds'?", 90, () => {
+        // Short pause then second line appears below
+        this.time.delayedCall(2200, () => {
+          const msg2 = this.add.text(W / 2, H / 2 + 52, '', {
+            ...lineStyle,
+            fontSize: '21px',
+            color:    '#fcd34d',
+          }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
+
+          this.tweens.add({ targets: msg2, alpha: 1, duration: 500, ease: 'Sine.easeOut' });
+
+          this._typeWords(msg2, "Is it a kind of Space potato?", 90, () => {
+            // Hold the final moment, then gently fade out
+            this.time.delayedCall(5000, () => {
+              this.tweens.add({
+                targets: [msg1, msg2],
+                alpha: 0, duration: 1600, ease: 'Sine.easeIn',
+              });
+            });
+          });
+        });
       });
     });
   }
