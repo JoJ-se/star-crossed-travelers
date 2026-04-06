@@ -1164,13 +1164,8 @@ class Level4 extends Phaser.Scene {
   }
 
   _runCredits() {
-    // BUG FIX: camera.fadeOut() keeps a black overlay active after completion,
-    // rendering any new objects added in the callback invisible beneath it.
-    // Solution: use a manual screen-space black graphics rect at depth 55,
-    // tween it to alpha 1, then add text at depth 60 (above the rect).
-    const W   = this.scale.width;
-    const H   = this.scale.height;
-    const dpr = window.devicePixelRatio || 1;
+    const W = this.scale.width;
+    const H = this.scale.height;
 
     const blackout = this.add.graphics().setScrollFactor(0).setDepth(55).setAlpha(0);
     blackout.fillStyle(0x000000, 1);
@@ -1182,38 +1177,65 @@ class Level4 extends Phaser.Scene {
       duration: 1400,
       ease: 'Sine.easeIn',
       onComplete: () => {
-        // First Rocky message — grey italic, types out word by word
-        const msg1 = this.add.text(W / 2, H / 2 - 32, '', {
-          fontSize: '21px', fontFamily: 'Georgia, serif',
-          fontStyle: 'italic', color: '#9ca3af',
-          align: 'center', resolution: dpr,
-          wordWrap: { width: Math.min(W * 0.82, 560) },
-          lineSpacing: 8,
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
+        // Raise Rocky panel above the blackout so it's visible
+        this._rockyPanel.setDepth(60);
+        this._rockyNameText.setDepth(61);
+        this._rockyBodyText.setDepth(61);
 
-        this.tweens.add({ targets: msg1, alpha: 1, duration: 700, ease: 'Sine.easeOut' });
+        this._showRockyCentered("And, humans.... what is a 'Macdonalds'?", 2000, () => {
+          this._showRockyCentered("Is it a kind of Space potato?", 2000, () => {
+            // Game ends — stay on black
+          });
+        });
+      },
+    });
+  }
 
-        this._typeWords(msg1, "And, humans.... what is a 'Macdonalds'?", 90, () => {
-          // 2 second pause then second message
-          this.time.delayedCall(2000, () => {
-            const msg2 = this.add.text(W / 2, H / 2 + 54, '', {
-              fontSize: '21px', fontFamily: 'Georgia, serif',
-              fontStyle: 'italic', color: '#fcd34d',
-              align: 'center', resolution: dpr,
-              wordWrap: { width: Math.min(W * 0.82, 560) },
-              lineSpacing: 8,
-            }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
+  // Rocky panel drawn centered on screen — used for post-blackout credits messages
+  _showRockyCentered(text, holdMs, onComplete) {
+    const W      = this.scale.width;
+    const H      = this.scale.height;
+    const panelW = Math.min(700, W - 28);
+    const panelH = 130;
+    const panelX = (W - panelW) / 2;
+    const panelY = (H - panelH) / 2;
 
-            this.tweens.add({ targets: msg2, alpha: 1, duration: 500, ease: 'Sine.easeOut' });
+    this._rockyPanel.clear();
+    this._rockyPanel.fillStyle(0x0f172a, 0.95);
+    this._rockyPanel.fillRoundedRect(panelX, panelY, panelW, panelH, 12);
+    this._rockyPanel.lineStyle(2.5, L4_PAL.teal, 0.9);
+    this._rockyPanel.strokeRoundedRect(panelX, panelY, panelW, panelH, 12);
+    this._rockyPanel.lineStyle(1, L4_PAL.gold, 0.35);
+    this._rockyPanel.strokeRoundedRect(panelX + 3, panelY + 3, panelW - 6, panelH - 6, 10);
 
-            this._typeWords(msg2, "Is it a kind of Space potato?", 90, () => {
-              // Hold, then fade both messages out gently
-              this.time.delayedCall(5000, () => {
-                this.tweens.add({
-                  targets: [msg1, msg2],
-                  alpha: 0, duration: 1600, ease: 'Sine.easeIn',
-                });
-              });
+    const ax = panelX + 56, ay = panelY + 65;
+    this._rockyPanel.fillStyle(0x78716c, 1);
+    [[ax-18,ay],[ax+18,ay],[ax,ay-14],[ax,ay+14],[ax-14,ay-10],[ax+14,ay+10]].forEach(([lx,ly]) => {
+      this._rockyPanel.fillEllipse(lx, ly, 13, 7);
+    });
+    this._rockyPanel.fillStyle(0x9ca3af, 1); this._rockyPanel.fillEllipse(ax, ay, 34, 26);
+    this._rockyPanel.fillStyle(0x78716c, 1);
+    this._rockyPanel.fillCircle(ax-7, ay-3, 3); this._rockyPanel.fillCircle(ax+6, ay+3, 2);
+    this._rockyPanel.fillStyle(0x1e1b4b, 1);
+    this._rockyPanel.fillCircle(ax-6, ay-2, 3.5); this._rockyPanel.fillCircle(ax+6, ay-2, 3.5);
+    this._rockyPanel.fillStyle(0xffffff, 0.85);
+    this._rockyPanel.fillCircle(ax-5, ay-3, 1.5); this._rockyPanel.fillCircle(ax+7, ay-3, 1.5);
+
+    const tx = panelX + 104;
+    this._rockyNameText.setText('Rocky:').setPosition(tx, panelY + 14).setAlpha(0);
+    this._rockyBodyText.setText('').setPosition(tx, panelY + 36).setAlpha(0);
+    this._rockyPanel.setAlpha(0);
+
+    this.tweens.add({
+      targets: [this._rockyPanel, this._rockyNameText, this._rockyBodyText],
+      alpha: 1, duration: 280,
+      onComplete: () => {
+        this._typeRockyText(text, 90, () => {
+          this.time.delayedCall(holdMs, () => {
+            this.tweens.add({
+              targets: [this._rockyPanel, this._rockyNameText, this._rockyBodyText],
+              alpha: 0, duration: 380,
+              onComplete: () => { if (onComplete) onComplete(); },
             });
           });
         });
