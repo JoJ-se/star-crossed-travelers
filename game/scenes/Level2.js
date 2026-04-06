@@ -766,7 +766,7 @@ class Level2 extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────────────────
   _completeLevel() {
     this._levelComplete = true;
-    this._queueRocky("Made it through! You know what she'd sign to you,right? Let me try - How was it..'We were just kids when we fell in love..I will not give you up this time' - yeah, that one.Go get her. She's counting on you.", 6000);
+    this._queueRocky("Made it through! You know what she'd sign to you,right? Let me try - How was it..'We were just kids when we fell in love..I will not give you up this time' - yeah, that one. Go get her.", 6000);
 
     this.time.delayedCall(6800, () => {
       this.cameras.main.fadeOut(800, 3, 7, 18);
@@ -829,7 +829,7 @@ class Level2 extends Phaser.Scene {
         );
         if (!this._firstCurrentDone) {
           this._firstCurrentDone = true;
-          this._queueRocky("That one was harsh!..But Beijing goodbye way worse, right?.", 4000);
+          this._queueRocky("That one was harsh!..But Beijing goodbye is way worse, right?.", 4000);
         }
       }
     });
