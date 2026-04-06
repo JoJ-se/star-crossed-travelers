@@ -1150,7 +1150,7 @@ class Level4 extends Phaser.Scene {
                   this._queueRocky("...Humans are absolutely insane.", 4500);
                   this._queueRocky("...I'd do it again though.", 4000);
                   this._queueRocky(
-                    "It is always the best time! When we are together.",
+                    "It is always the best time - when we are together.",
                     4500,
                     () => this._runCredits()
                   );
