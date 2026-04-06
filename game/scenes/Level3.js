@@ -48,6 +48,8 @@ class Level3 extends Phaser.Scene {
     this._firstDeathDone     = false;
     this._bossReachedDone    = false;
     this._firstOrbDone       = false;
+    this._dustStormDone      = false;
+    this._beijingJokeDone    = false;
 
     // Rocky queue
     this._rockyQueue = [];
@@ -712,9 +714,6 @@ class Level3 extends Phaser.Scene {
 
     if (this._deathCount === 1 && !this._firstDeathDone) {
       this._firstDeathDone = true;
-      this.time.delayedCall(600, () => {
-        this._queueRocky("Dust storm coming - hide like you hide from Elina's 'victim jokes'.", 4000);
-      });
     }
 
     this.time.delayedCall(700, () => {
@@ -804,6 +803,18 @@ class Level3 extends Phaser.Scene {
       this._bossAlert = distToJoao < 50 && joao.y < this._bossY + 120;
 
       this._drawBoss();
+    }
+
+    // ── Early climb — dust storm warning (y < 3500, first 700 units of ascent)
+    if (!this._dustStormDone && joao.y < L3_H - 600) {
+      this._dustStormDone = true;
+      this._queueRocky("Dust storm coming - hide like you hide from Elina's 'victim jokes'.", 4000);
+    }
+
+    // ── Mid-early climb — Beijing joke from Level 2 transition (y < 2800)
+    if (!this._beijingJokeDone && joao.y < L3_H - 1400) {
+      this._beijingJokeDone = true;
+      this._queueRocky("That one was harsh!..But Beijing goodbye is way worse, right?", 4000);
     }
 
     // ── Rocky mid-way trigger

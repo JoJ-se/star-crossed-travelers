@@ -59,6 +59,38 @@ class IntroCutscene extends Phaser.Scene {
     g.fillStyle(0xffffff,0.5); g.fillEllipse(cx-5*s,cy-32*s,8*s,6*s);
   }
 
+  // Elina's astronaut — white suit, pink visor, pink accents (matches landing page girl)
+  _drawElinaAstronaut(g, cx, cy, s) {
+    const W = 0xe8edf5, B = 0xbdc6d4, V = 0xec4899, P = 0xf9a8d4;
+    g.fillStyle(B, 1);
+    g.fillRoundedRect(cx-6*s, cy-14*s, 12*s, 24*s, 3*s);
+    g.fillStyle(W, 1);
+    g.fillRoundedRect(cx-18*s, cy-18*s, 36*s, 34*s, 6*s);
+    g.lineStyle(2*s, B, 1);
+    g.strokeRoundedRect(cx-18*s, cy-18*s, 36*s, 34*s, 6*s);
+    g.fillStyle(P, 1);
+    g.fillRoundedRect(cx-8*s, cy-12*s, 16*s, 12*s, 2*s);
+    g.fillStyle(0xfcd34d,1); g.fillCircle(cx-3*s,cy-7*s,2*s);
+    g.fillStyle(0xf87171,1); g.fillCircle(cx+3*s,cy-7*s,2*s);
+    g.fillStyle(0x6ee7b7,1); g.fillCircle(cx,    cy-7*s,2*s);
+    g.fillStyle(W,1); g.fillRoundedRect(cx-28*s,cy-16*s,12*s,28*s,4*s);
+    g.lineStyle(2*s,B,1); g.strokeRoundedRect(cx-28*s,cy-16*s,12*s,28*s,4*s);
+    g.fillStyle(P,1); g.fillEllipse(cx-22*s,cy+14*s,14*s,10*s);
+    g.fillStyle(W,1); g.fillRoundedRect(cx+16*s,cy-16*s,12*s,28*s,4*s);
+    g.lineStyle(2*s,B,1); g.strokeRoundedRect(cx+16*s,cy-16*s,12*s,28*s,4*s);
+    g.fillStyle(P,1); g.fillEllipse(cx+22*s,cy+14*s,14*s,10*s);
+    g.fillStyle(W,1); g.fillRoundedRect(cx-16*s,cy+16*s,12*s,24*s,3*s);
+    g.lineStyle(2*s,B,1); g.strokeRoundedRect(cx-16*s,cy+16*s,12*s,24*s,3*s);
+    g.fillStyle(P,1); g.fillRoundedRect(cx-19*s,cy+38*s,18*s,8*s,3*s);
+    g.fillStyle(W,1); g.fillRoundedRect(cx+4*s,cy+16*s,12*s,24*s,3*s);
+    g.lineStyle(2*s,B,1); g.strokeRoundedRect(cx+4*s,cy+16*s,12*s,24*s,3*s);
+    g.fillStyle(P,1); g.fillRoundedRect(cx+1*s,cy+38*s,18*s,8*s,3*s);
+    g.fillStyle(W,1); g.fillCircle(cx,cy-28*s,20*s);
+    g.lineStyle(2*s,B,1); g.strokeCircle(cx,cy-28*s,20*s);
+    g.fillStyle(V,1); g.fillEllipse(cx,cy-28*s,26*s,20*s);
+    g.fillStyle(0xffffff,0.5); g.fillEllipse(cx-5*s,cy-32*s,8*s,6*s);
+  }
+
   _drawShipPanel(g, cx, cy, w, h) {
     g.fillStyle(0x374151, 1);
     g.fillRect(cx-w/2, cy-h/2, w, h);
@@ -198,32 +230,57 @@ class IntroCutscene extends Phaser.Scene {
   // CINEMATIC STORY CARD
   // ─────────────────────────────────────────────────────────────────────────
   _showStoryCard(onDone) {
-    const W = this.scale.width;
-    const H = this.scale.height;
+    const W   = this.scale.width;
+    const H   = this.scale.height;
+    const dpr = window.devicePixelRatio || 1;
 
-    // Subtle dark veil
+    // Dark veil
     const vignette = this.add.graphics().setDepth(18);
-    vignette.fillStyle(0x000000, 0.48);
+    vignette.fillStyle(0x000000, 0.62);
     vignette.fillRect(0, 0, W, H);
 
-    // Text lives in the RIGHT half so it never lands on Joao (left side)
-    const textX  = Math.round(W * 0.52);
-    const maxW   = W - textX - 28;
-    const dpr    = window.devicePixelRatio || 1;
+    // Cinematic card — right half, never overlaps Joao (left side)
+    const isMobile = W < 600;
+    const cardX   = isMobile ? 12 : Math.round(W * 0.48);
+    const cardW   = isMobile ? W - 24 : W - cardX - 16;
+    const cardPad = 22;
+
+    // Subtle card background for readability
+    const card = this.add.graphics().setDepth(19);
+    card.fillStyle(0x020b18, 0.72);
+    card.fillRoundedRect(cardX, H * 0.12, cardW, H * 0.70, 10);
+    card.lineStyle(1, 0x6366f1, 0.3);
+    card.strokeRoundedRect(cardX, H * 0.12, cardW, H * 0.70, 10);
+
+    const textX = cardX + cardPad;
+    const maxW  = cardW - cardPad * 2;
 
     const lines = [
-  { text: 'A cosmic storm tore through the galaxy without warning.', size: '18px', color: '#94a3b8', y: H * 0.22 },
-  { text: "Joao and Elina's ship split in two.", size: '21px', color: '#cbd5e1', y: H * 0.33 },
-  { text: 'She drifted toward the legendary Ice-Cream Planet — ice cream in hand, completely unbothered.', size: '16px', color: '#94a3b8', y: H * 0.44 },
-  { text: 'Classic Elina.', size: '21px', color: '#cbd5e1', y: H * 0.57 },
-  { text: 'He has to find her.', size: '26px', color: '#fcd34d', y: H * 0.67 },
-];
+      { text: 'A cosmic storm tore through the galaxy without warning.',
+        size: isMobile ? '15px' : '17px', family: 'Georgia, serif',
+        color: '#94a3b8', style: 'italic', y: H * 0.20 },
+      { text: "Joao and Elina's ship split in two.",
+        size: isMobile ? '18px' : '22px', family: 'Georgia, serif',
+        color: '#e2e8f0', style: 'bold italic', y: H * 0.32 },
+      { text: 'She drifted toward the legendary Ice-Cream Planet — ice cream in hand, completely unbothered.',
+        size: isMobile ? '14px' : '16px', family: 'Georgia, serif',
+        color: '#94a3b8', style: 'italic', y: H * 0.44 },
+      { text: 'Classic Elina.',
+        size: isMobile ? '18px' : '22px', family: 'Georgia, serif',
+        color: '#cbd5e1', style: 'bold italic', y: H * 0.58 },
+      { text: 'He has to find her.',
+        size: isMobile ? '22px' : '28px', family: 'Georgia, serif',
+        color: '#fcd34d', style: 'bold', y: H * 0.69 },
+    ];
 
-    const textObjs = [];
+    const textObjs = [card];
     const typeNextLine = (idx) => {
       if (idx >= lines.length) {
-        const hint = this.add.text(textX, H * 0.72, 'click / space to continue', {
-          fontSize: '13px', fontFamily: 'Arial, sans-serif', color: '#6366f1',
+        const hint = this.add.text(textX, H * 0.82, 'tap / space to continue', {
+          fontSize: isMobile ? '12px' : '13px',
+          fontFamily: 'Georgia, serif',
+          fontStyle: 'italic',
+          color: '#818cf8',
           resolution: dpr,
         }).setDepth(21).setAlpha(0);
         this.tweens.add({ targets: hint, alpha: 1, duration: 400, delay: 300 });
@@ -232,7 +289,7 @@ class IntroCutscene extends Phaser.Scene {
         const dismiss = () => {
           this.input.off('pointerdown', dismiss);
           this.input.keyboard.off('keydown-SPACE', dismiss);
-          textObjs.forEach(t => t.destroy());
+          textObjs.forEach(t => { if (t && t.destroy) t.destroy(); });
           vignette.destroy();
           hint.destroy();
           if (onDone) onDone();
@@ -242,21 +299,21 @@ class IntroCutscene extends Phaser.Scene {
         return;
       }
 
-      const { text, size, color, y } = lines[idx];
+      const { text, size, family, color, style, y } = lines[idx];
       const t = this.add.text(textX, y, '', {
         fontSize: size,
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: family,
+        fontStyle: style,
         color,
-        fontStyle: 'normal',
         wordWrap: { width: maxW },
-        lineSpacing: 5,
+        lineSpacing: 6,
         resolution: dpr,
       }).setDepth(20).setAlpha(0);
       textObjs.push(t);
 
-      this.tweens.add({ targets: t, alpha: 1, duration: 350 });
-      this._typeWords(t, text, 72, () => {
-        this.time.delayedCall(180, () => typeNextLine(idx + 1));
+      this.tweens.add({ targets: t, alpha: 1, duration: 300 });
+      this._typeWords(t, text, 65, () => {
+        this.time.delayedCall(140, () => typeNextLine(idx + 1));
       });
     };
 
@@ -461,11 +518,8 @@ class IntroCutscene extends Phaser.Scene {
     const s = 0.38;  // small scale = looks distant
 
     const g = this.add.graphics().setDepth(8);
-    // Bichilin astronaut body
-    this._drawAstronaut(g, 0, 0, s);
-    // Pink visor overlay (match landing-page girl)
-    g.fillStyle(0xec4899, 0.92);
-    g.fillEllipse(0, -28 * s, 26 * s, 20 * s);
+    // Elina — white suit, pink visor, pink accents (exact landing page match)
+    this._drawElinaAstronaut(g, 0, 0, s);
     // Glowing ice cream cone to her right (she's reaching for it)
     const icX = 42 * s, icY = -22 * s;
     g.fillStyle(0xfcd34d, 0.95);

@@ -772,7 +772,7 @@ class Level4 extends Phaser.Scene {
     const isBichilin = speaker === 'bichilin';
     const borderCol  = isBichilin ? L4_PAL.pink  : L4_PAL.blue;
     const nameCol    = isBichilin ? '#f9a8d4'     : '#93c5fd';
-    const nameStr    = isBichilin ? 'Bichilin:'   : 'Joao:';
+    const nameStr    = isBichilin ? 'Elina:'      : 'Joao:';
     const panelBg    = isBichilin ? 0x1a0d14      : 0x0d1425;
 
     const AVATAR_AREA = 92;          // pixels reserved on left for avatar
@@ -1145,7 +1145,7 @@ class Level4 extends Phaser.Scene {
                   // Rocky — four messages
                   this._queueRocky(
                     "Four planets. A debris field, a nebula, an ancient Martian structure, a philosophical Chinese man, and an asteroid. All of that — for ice cream and a hug.",
-                    5500
+                    4000
                   );
                   this._queueRocky("...Humans are absolutely insane.", 4500);
                   this._queueRocky("...I'd do it again though.", 4000);
@@ -1184,7 +1184,10 @@ class Level4 extends Phaser.Scene {
 
         this._showRockyCentered("And, humans.... what is a 'Mcdonalds'?", 2000, () => {
           this._showRockyCentered("Is it a kind of Space potato?", 2000, () => {
-            // Game ends — stay on black
+            // Pause 2 seconds then return to landing page — game is replayable
+            this.time.delayedCall(2000, () => {
+              window.location.reload();
+            });
           });
         });
       },
