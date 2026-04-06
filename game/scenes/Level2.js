@@ -74,7 +74,7 @@ class Level2 extends Phaser.Scene {
     this.time.delayedCall(1800, () => {
       if (!this._welcomeDone) {
         this._welcomeDone = true;
-        this._queueRocky("This place is beautiful. Don't touch anything.", 4200);
+        this._queueRocky("This place is beautiful. Reminds me of a place where Elina used to live... you know..Before her ship crashed on Earth.", 4200);
       }
     });
   }
@@ -299,7 +299,7 @@ class Level2 extends Phaser.Scene {
     if (!this._firstBeaconDone) {
       this._firstBeaconDone = true;
       this.time.delayedCall(200, () => {
-        this._queueRocky("Light it up. Smart. I was going to suggest the same thing.", 4000);
+        this._queueRocky("Light it up. Smart. Perfectionista.", 4000);
       });
     }
   }
@@ -766,7 +766,7 @@ class Level2 extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────────────────
   _completeLevel() {
     this._levelComplete = true;
-    this._queueRocky("You made it through a sentient murder cloud. I'm almost proud.", 6000);
+    this._queueRocky("Made it through! You know what she'd sign to you,right? Let me try - How was it..'We were just kids when we fell in love..I will not give you up this time' - yeah, that one.Go get her. She's counting on you.", 6000);
 
     this.time.delayedCall(6800, () => {
       this.cameras.main.fadeOut(800, 3, 7, 18);
@@ -829,7 +829,7 @@ class Level2 extends Phaser.Scene {
         );
         if (!this._firstCurrentDone) {
           this._firstCurrentDone = true;
-          this._queueRocky("That push wasn't me. The cloud has opinions.", 4000);
+          this._queueRocky("That one was harsh!..But BJ goodbye way worse, am i right?.", 4000);
         }
       }
     });
@@ -854,17 +854,13 @@ class Level2 extends Phaser.Scene {
     // ── Position-based Rocky triggers
     if (!this._midJoke1Done && joao.x > 1200) {
       this._midJoke1Done = true;
-      this._queueRocky("These platforms were here the whole time. You just couldn't see them. Bit of a metaphor, really.", 5200);
+      this._queueRocky("Nice one - that platform was hiding in plain sight.", 5200);
     }
     if (!this._midJoke2Done && joao.x > 2000) {
       this._midJoke2Done = true;
-      this._queueRocky("Halfway. The gas is thicker ahead. And angrier.", 4000);
+      this._queueRocky("Before Earth, she never smiled like she does now.", 4000);
     }
-    if (!this._finalApproachDone && joao.x > 3200) {
-      this._finalApproachDone = true;
-      this._queueRocky("Almost out. Don't celebrate yet — clouds hold grudges.", 4200);
-    }
-
+   
     // ── Fall off world
     if (joao.y > L2_H + 80) this._killJoao();
   }
