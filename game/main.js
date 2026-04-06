@@ -8,6 +8,10 @@ window.startGame = function () {
     type: Phaser.AUTO,
     backgroundColor: '#030712',
     parent: 'game-container',
+    antialias: true,
+    antialiasGL: true,
+    pixelArt: false,
+    roundPixels: false,
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,

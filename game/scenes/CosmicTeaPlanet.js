@@ -84,9 +84,27 @@ class CosmicTeaPlanet extends Phaser.Scene {
     g.fillEllipse(W * 0.55, H * 0.60, W * 0.70, H * 0.20);
     g.fillEllipse(W * 0.88, H * 0.63, W * 0.50, H * 0.16);
 
-    // Soft ambient glow near horizon
-    g.fillStyle(0xfbbf24, 0.06); g.fillRect(0, H * 0.50, W, H * 0.12);
-    g.fillStyle(0xf59e0b, 0.04); g.fillRect(0, H * 0.45, W, H * 0.08);
+    // Soft ambient glow near horizon — richer gold
+    g.fillStyle(0xfbbf24, 0.10); g.fillRect(0, H * 0.50, W, H * 0.14);
+    g.fillStyle(0xf59e0b, 0.07); g.fillRect(0, H * 0.44, W, H * 0.10);
+    g.fillStyle(0xfde68a, 0.04); g.fillRect(0, H * 0.38, W, H * 0.08);
+
+    // Golden atmospheric haze — distant sparkle points
+    const sparkle = this.add.graphics().setDepth(-8);
+    for (let i = 0; i < 60; i++) {
+      const sx = Phaser.Math.Between(0, W), sy = Phaser.Math.Between(0, H * 0.55);
+      sparkle.fillStyle(0xfde68a, Math.random() * 0.35 + 0.05);
+      sparkle.fillCircle(sx, sy, Math.random() * 1.4 + 0.3);
+    }
+
+    // Cinematic vignette
+    const vig = this.add.graphics().setDepth(28);
+    vig.fillStyle(0x000000, 0.38); vig.fillRect(0, 0, W * 0.18, H);
+    vig.fillStyle(0x000000, 0.38); vig.fillRect(W * 0.82, 0, W * 0.18, H);
+    vig.fillStyle(0x000000, 0.25); vig.fillRect(0, 0, W, H * 0.10);
+    vig.fillStyle(0x000000, 0.25); vig.fillRect(0, H * 0.90, W, H * 0.10);
+    vig.fillStyle(0x000000, 0.16); vig.fillRect(0, 0, W * 0.09, H);
+    vig.fillStyle(0x000000, 0.16); vig.fillRect(W * 0.91, 0, W * 0.09, H);
   }
 
   // ─────────────────────────────────────────────────────────────────────────

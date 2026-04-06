@@ -71,6 +71,18 @@ class Level2 extends Phaser.Scene {
 
     this.cameras.main.fadeIn(600, 3, 7, 18);
 
+    this.time.delayedCall(350, () => {
+      const W = this.scale.width, H = this.scale.height, dpr = window.devicePixelRatio || 1;
+      const card = this.add.text(W / 2, H * 0.38, 'LEVEL 2\nTHE NEBULA', {
+        fontSize: '28px', fontFamily: 'Georgia, serif', fontStyle: 'bold italic',
+        color: '#a78bfa', align: 'center', resolution: dpr,
+        stroke: '#08061a', strokeThickness: 5, lineSpacing: 6,
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(50).setAlpha(0);
+      this.tweens.add({ targets: card, alpha: 1, duration: 700, onComplete: () => {
+        this.time.delayedCall(1600, () => this.tweens.add({ targets: card, alpha: 0, duration: 700, onComplete: () => card.destroy() }));
+      }});
+    });
+
     this.time.delayedCall(1800, () => {
       if (!this._welcomeDone) {
         this._welcomeDone = true;
@@ -151,6 +163,15 @@ class Level2 extends Phaser.Scene {
       fore.fillStyle(col, a * 0.6);
       fore.fillEllipse(x + r * 1.1, y + 22, r * 2.1, r * 0.65);
     });
+
+    // Cinematic vignette
+    const vig = this.add.graphics().setScrollFactor(0).setDepth(29);
+    vig.fillStyle(0x000000, 0.40); vig.fillRect(0, 0, W * 0.18, H);
+    vig.fillStyle(0x000000, 0.40); vig.fillRect(W * 0.82, 0, W * 0.18, H);
+    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, 0, W, H * 0.10);
+    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, H * 0.90, W, H * 0.10);
+    vig.fillStyle(0x000000, 0.18); vig.fillRect(0, 0, W * 0.09, H);
+    vig.fillStyle(0x000000, 0.18); vig.fillRect(W * 0.91, 0, W * 0.09, H);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -203,6 +224,9 @@ class Level2 extends Phaser.Scene {
     g.fillStyle(0x1e1040,      1); g.fillRect(x - w/2, y + h/2 - 5, w, 5);
     g.lineStyle(1.5, L2_PAL.purple, 0.65); g.strokeRect(x - w/2, y - h/2, w, h);
     g.lineStyle(1,   L2_PAL.pink,   0.28); g.strokeRect(x - w/2 + 2, y - h/2 + 2, w - 4, h - 4);
+    // Energy shimmer along top edge
+    g.lineStyle(2, L2_PAL.violet, 0.65); g.lineBetween(x - w/2 + 4, y - h/2, x + w/2 - 4, y - h/2);
+    g.lineStyle(1, L2_PAL.blue,   0.40); g.lineBetween(x - w/2 + 4, y - h/2 + 2, x + w/2 - 4, y - h/2 + 2);
 
     const body = this.physics.add.staticImage(x, y, null).setVisible(false);
     body.setDisplaySize(w, h); body.refreshBody();
@@ -446,12 +470,14 @@ class Level2 extends Phaser.Scene {
       [3150, 330],
     ].forEach(([x, y]) => {
       const g = this.add.graphics().setDepth(4);
-      g.fillStyle(L2_PAL.pink,   0.20); g.fillCircle(x, y, 18);
-      g.fillStyle(L2_PAL.violet, 0.14); g.fillCircle(x, y, 14);
-      g.fillStyle(L2_PAL.gold,   0.92); g.fillCircle(x, y,  8);
-      g.fillStyle(0xffffff,      0.65); g.fillCircle(x-2, y-2, 3);
+      g.fillStyle(L2_PAL.pink,   0.07);  g.fillCircle(x, y, 28); // far glow
+      g.fillStyle(L2_PAL.pink,   0.14);  g.fillCircle(x, y, 22); // outer bloom
+      g.fillStyle(L2_PAL.violet, 0.20);  g.fillCircle(x, y, 16); // mid bloom
+      g.fillStyle(L2_PAL.gold,   0.92);  g.fillCircle(x, y,  9); // core
+      g.fillStyle(0xffffff,      0.75);  g.fillCircle(x-3, y-3,  4); // highlight
+      g.fillStyle(0xffffff,      0.38);  g.fillCircle(x+2,  y+2, 2); // secondary
       this.tweens.add({
-        targets: g, alpha: 0.42, duration: 900, yoyo: true, repeat: -1,
+        targets: g, alpha: 0.32, duration: 1100, yoyo: true, repeat: -1,
         ease: 'Sine.easeInOut',
       });
 

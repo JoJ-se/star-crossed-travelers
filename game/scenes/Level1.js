@@ -68,6 +68,20 @@ class Level1 extends Phaser.Scene {
 
     this.cameras.main.fadeIn(600, 3, 7, 18);
 
+    // Cinematic level title card
+    this.time.delayedCall(350, () => {
+      const W = this.scale.width, H = this.scale.height;
+      const dpr = window.devicePixelRatio || 1;
+      const card = this.add.text(W / 2, H * 0.38, 'LEVEL 1\nTHE WRECK', {
+        fontSize: '28px', fontFamily: 'Georgia, serif', fontStyle: 'bold italic',
+        color: '#fcd34d', align: 'center', resolution: dpr,
+        stroke: '#030712', strokeThickness: 5, lineSpacing: 6,
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(50).setAlpha(0);
+      this.tweens.add({ targets: card, alpha: 1, duration: 700, onComplete: () => {
+        this.time.delayedCall(1600, () => this.tweens.add({ targets: card, alpha: 0, duration: 700, onComplete: () => card.destroy() }));
+      }});
+    });
+
     // Welcome message — fires shortly after level loads
     this.time.delayedCall(1800, () => {
       if (!this._welcomeDone) {
@@ -91,28 +105,48 @@ class Level1 extends Phaser.Scene {
     bg.fillStyle(PALETTE.dark, 1);
     bg.fillRect(0, 0, W, H);
 
+    // Richer amber planet — more glow layers
     const planet = this.add.graphics().setScrollFactor(0.05).setDepth(-9);
-    planet.fillStyle(0xd97706, 0.18); planet.fillCircle(2400, -80, 420);
-    planet.fillStyle(0xf59e0b, 0.10); planet.fillCircle(2400, -80, 320);
-    planet.fillStyle(0xfbbf24, 0.05); planet.fillCircle(2400, -80, 220);
+    planet.fillStyle(0x92400e, 0.06); planet.fillCircle(2400, -80, 560);
+    planet.fillStyle(0xd97706, 0.12); planet.fillCircle(2400, -80, 460);
+    planet.fillStyle(0xf59e0b, 0.20); planet.fillCircle(2400, -80, 360);
+    planet.fillStyle(0xfbbf24, 0.14); planet.fillCircle(2400, -80, 270);
+    planet.fillStyle(0xfef3c7, 0.06); planet.fillCircle(2400, -80, 180);
+    // Planet surface detail — darker band
+    planet.fillStyle(0x92400e, 0.18); planet.fillEllipse(2340, 20, 280, 80);
 
-    const starColors = [0xffffff, 0x93c5fd, 0xfde68a, 0xf9a8d4];
+    // Distant nebula tint behind the wreck
+    const neb = this.add.graphics().setScrollFactor(0.03).setDepth(-9);
+    neb.fillStyle(0x4c1d95, 0.07); neb.fillCircle(600,  300, 380);
+    neb.fillStyle(0x3730a3, 0.05); neb.fillCircle(1800, 220, 340);
+    neb.fillStyle(0x4c1d95, 0.06); neb.fillCircle(3000, 350, 360);
+
+    const starColors = [0xffffff, 0x93c5fd, 0xfde68a, 0xf9a8d4, 0xa78bfa];
     const stars1 = this.add.graphics().setScrollFactor(0.1).setDepth(-8);
     const stars2 = this.add.graphics().setScrollFactor(0.2).setDepth(-7);
-    for (let i = 0; i < 280; i++) {
+    for (let i = 0; i < 380; i++) {
       const x = Phaser.Math.Between(0, WORLD_W), y = Phaser.Math.Between(0, WORLD_H);
-      stars1.fillStyle(starColors[Math.floor(Math.random()*starColors.length)], Math.random()*0.5+0.2);
-      stars1.fillCircle(x, y, Math.random()*1.4+0.3);
+      stars1.fillStyle(starColors[Math.floor(Math.random()*starColors.length)], Math.random()*0.6+0.2);
+      stars1.fillCircle(x, y, Math.random()*1.6+0.3);
     }
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < 160; i++) {
       const x = Phaser.Math.Between(0, WORLD_W), y = Phaser.Math.Between(0, WORLD_H);
-      stars2.fillStyle(starColors[Math.floor(Math.random()*starColors.length)], Math.random()*0.4+0.2);
-      stars2.fillCircle(x, y, Math.random()*2+0.5);
+      stars2.fillStyle(starColors[Math.floor(Math.random()*starColors.length)], Math.random()*0.5+0.2);
+      stars2.fillCircle(x, y, Math.random()*2.2+0.6);
     }
 
     const deco = this.add.graphics().setScrollFactor(0.3).setDepth(-6);
     [[400,480,30,14],[900,120,24,10],[1500,520,40,18],[2100,140,28,12],[2700,460,36,16],[1200,360,22,9]]
       .forEach(([x,y,w,h]) => { deco.fillStyle(PALETTE.hull,0.35); deco.fillRect(x-w/2,y-h/2,w,h); });
+
+    // Cinematic vignette — dark screen edges
+    const vig = this.add.graphics().setScrollFactor(0).setDepth(29);
+    vig.fillStyle(0x000000, 0.40); vig.fillRect(0, 0, W * 0.18, H);
+    vig.fillStyle(0x000000, 0.40); vig.fillRect(W * 0.82, 0, W * 0.18, H);
+    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, 0, W, H * 0.10);
+    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, H * 0.90, W, H * 0.10);
+    vig.fillStyle(0x000000, 0.18); vig.fillRect(0, 0, W * 0.09, H);
+    vig.fillStyle(0x000000, 0.18); vig.fillRect(W * 0.91, 0, W * 0.09, H);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -155,8 +189,13 @@ class Level1 extends Phaser.Scene {
       g.fillStyle(PALETTE.hullHi, 1); g.fillRect(x-w/2+4, y-h/2+3, w-8, 4);
       g.fillStyle(0x1f2937,       1); g.fillRect(x-w/2, y+h/2-5, w, 5);
       g.lineStyle(1.5, 0x6b7280, 0.6); g.strokeRect(x-w/2, y-h/2, w, h);
-      g.fillStyle(0x6b7280, 0.8);
-      for (let i = 0; i < 3; i++) g.fillCircle(x-w/2+10+i*(w/3), y-h/2+6, 2);
+      // Panel seam line
+      g.lineStyle(0.8, 0x9ca3af, 0.3); g.lineBetween(x-w/2+4, y, x+w/2-4, y);
+      // Bolts — 4 along top
+      g.fillStyle(0x6b7280, 0.9);
+      for (let i = 0; i < 4; i++) g.fillCircle(x-w/2+10+i*(w/4.2), y-h/2+6, 2);
+      // Burn/rust mark
+      g.fillStyle(0x92400e, 0.22); g.fillEllipse(x + w*0.18, y+2, w*0.26, h*0.55);
 
       const body = this.physics.add.staticImage(x, y, null).setVisible(false);
       body.setDisplaySize(w, h); body.refreshBody();
@@ -213,11 +252,13 @@ class Level1 extends Phaser.Scene {
 
     positions.forEach(([x, y]) => {
       const g = this.add.graphics().setDepth(4);
-      g.fillStyle(PALETTE.gold, 0.15);   g.fillCircle(x, y, 18);
-      g.fillStyle(PALETTE.indigo, 0.12); g.fillCircle(x, y, 14);
-      g.fillStyle(PALETTE.gold, 0.9);    g.fillCircle(x, y, 8);
-      g.fillStyle(0xffffff, 0.6);        g.fillCircle(x-2, y-2, 3);
-      this.tweens.add({ targets: g, alpha: 0.4, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      g.fillStyle(PALETTE.gold,   0.06);  g.fillCircle(x, y, 28); // far glow
+      g.fillStyle(PALETTE.gold,   0.12);  g.fillCircle(x, y, 22); // outer bloom
+      g.fillStyle(PALETTE.indigo, 0.18);  g.fillCircle(x, y, 16); // mid bloom
+      g.fillStyle(PALETTE.gold,   0.92);  g.fillCircle(x, y, 9);  // core
+      g.fillStyle(0xffffff,       0.75);  g.fillCircle(x-3, y-3, 4); // highlight
+      g.fillStyle(0xffffff,       0.38);  g.fillCircle(x+2,  y+2, 2); // secondary
+      this.tweens.add({ targets: g, alpha: 0.32, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
       const body = this.physics.add.staticImage(x, y, null).setVisible(false);
       body.setDisplaySize(26, 26); body.refreshBody();
@@ -533,7 +574,8 @@ class Level1 extends Phaser.Scene {
     this._deathCount++;
     this._deathText.setText(`Deaths: ${this._deathCount}`);
 
-    this.cameras.main.flash(250, 200, 0, 0);
+    this.cameras.main.flash(180, 255, 80, 0);
+    this.time.delayedCall(180, () => this.cameras.main.flash(160, 180, 20, 20));
 
     // Rocky death commentary — queued so it stacks properly with debris comments
     if (this._deathCount === 1 && !this._firstDeathDone) {

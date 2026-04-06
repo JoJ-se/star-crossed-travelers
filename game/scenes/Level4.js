@@ -72,6 +72,18 @@ class Level4 extends Phaser.Scene {
 
     this.cameras.main.fadeIn(700, 3, 7, 18);
 
+    this.time.delayedCall(350, () => {
+      const W = this.scale.width, H = this.scale.height, dpr = window.devicePixelRatio || 1;
+      const card = this.add.text(W / 2, H * 0.38, 'LEVEL 4\nTHE ICE-CREAM PLANET', {
+        fontSize: '28px', fontFamily: 'Georgia, serif', fontStyle: 'bold italic',
+        color: '#67e8f9', align: 'center', resolution: dpr,
+        stroke: '#020b18', strokeThickness: 5, lineSpacing: 6,
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(50).setAlpha(0);
+      this.tweens.add({ targets: card, alpha: 1, duration: 700, onComplete: () => {
+        this.time.delayedCall(1600, () => this.tweens.add({ targets: card, alpha: 0, duration: 700, onComplete: () => card.destroy() }));
+      }});
+    });
+
     this.time.delayedCall(1800, () => {
       if (!this._welcomeDone) {
         this._welcomeDone = true;
@@ -117,31 +129,47 @@ class Level4 extends Phaser.Scene {
     planet.fillStyle(0xf9a8d4, 0.06); planet.fillEllipse(2850, -120, 200, 80);
     planet.fillStyle(0xa78bfa, 0.05); planet.fillEllipse(2760, -200, 180, 60);
 
-    // Aurora curtains — Layer 2 (scrollFactor 0.12)
+    // Aurora curtains — Layer 2 (scrollFactor 0.12) — richer, more dramatic
     const aurora = this.add.graphics().setScrollFactor(0.12).setDepth(-7);
     const auroraData = [
-      [400,   0, 60, 380, 0x67e8f9, 0.09],
-      [700,   0, 80, 420, 0x34d399, 0.07],
-      [1100,  0, 55, 360, 0xa78bfa, 0.08],
-      [1500,  0, 70, 400, 0x67e8f9, 0.07],
-      [1900,  0, 65, 380, 0xf9a8d4, 0.06],
-      [2300,  0, 75, 420, 0x34d399, 0.08],
-      [2700,  0, 60, 360, 0xa78bfa, 0.07],
-      [3100,  0, 70, 400, 0x67e8f9, 0.09],
+      [400,   0, 70,  420, 0x67e8f9, 0.13],
+      [700,   0, 90,  460, 0x34d399, 0.10],
+      [1100,  0, 65,  400, 0xa78bfa, 0.12],
+      [1500,  0, 80,  440, 0x67e8f9, 0.11],
+      [1900,  0, 75,  420, 0xf9a8d4, 0.10],
+      [2300,  0, 85,  460, 0x34d399, 0.12],
+      [2700,  0, 70,  400, 0xa78bfa, 0.11],
+      [3100,  0, 80,  440, 0x67e8f9, 0.13],
     ];
     auroraData.forEach(([x, y, w, h, col, a]) => {
       aurora.fillStyle(col, a);
       aurora.fillRect(x - w/2, y, w, h);
-      aurora.fillStyle(col, a * 0.5);
-      aurora.fillRect(x - w/2 + w*0.3, y, w * 0.4, h * 0.7);
+      aurora.fillStyle(col, a * 0.55);
+      aurora.fillRect(x - w/2 + w*0.3, y, w * 0.4, h * 0.75);
+      // Inner bright core
+      aurora.fillStyle(col, a * 0.3);
+      aurora.fillRect(x - 8, y, 16, h * 0.6);
     });
 
-    // Animate aurora alpha
-    this.tweens.add({
-      targets: aurora, alpha: 0.45,
-      duration: 2800, yoyo: true, repeat: -1,
-      ease: 'Sine.easeInOut',
+    // Second aurora layer — offset colors for depth
+    const aurora2 = this.add.graphics().setScrollFactor(0.09).setDepth(-8);
+    [
+      [550,  0, 50, 340, 0xf9a8d4, 0.07],
+      [950,  0, 60, 380, 0x67e8f9, 0.06],
+      [1300, 0, 45, 320, 0x34d399, 0.07],
+      [1750, 0, 55, 360, 0xa78bfa, 0.06],
+      [2150, 0, 50, 340, 0xf9a8d4, 0.07],
+      [2550, 0, 60, 380, 0x67e8f9, 0.06],
+      [2950, 0, 50, 360, 0x34d399, 0.07],
+      [3350, 0, 55, 340, 0xa78bfa, 0.06],
+    ].forEach(([x, y, w, h, col, a]) => {
+      aurora2.fillStyle(col, a);
+      aurora2.fillRect(x - w/2, y, w, h);
     });
+
+    // Animate aurora layers with offset phases
+    this.tweens.add({ targets: aurora,  alpha: 0.42, duration: 2800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    this.tweens.add({ targets: aurora2, alpha: 0.30, duration: 3600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 1400 });
 
     // Crystal ice formations — Layer 3 (scrollFactor 0.22)
     const crystals = this.add.graphics().setScrollFactor(0.22).setDepth(-6);
@@ -174,6 +202,15 @@ class Level4 extends Phaser.Scene {
     ground.fillRect(0, L4_H - 30, L4_W, 30);
     ground.fillStyle(0x7dd3fc, 0.18);
     ground.fillRect(0, L4_H - 30, L4_W, 6);
+
+    // Cinematic vignette
+    const vig = this.add.graphics().setScrollFactor(0).setDepth(29);
+    vig.fillStyle(0x000000, 0.40); vig.fillRect(0, 0, W * 0.18, H);
+    vig.fillStyle(0x000000, 0.40); vig.fillRect(W * 0.82, 0, W * 0.18, H);
+    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, 0, W, H * 0.10);
+    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, H * 0.90, W, H * 0.10);
+    vig.fillStyle(0x000000, 0.18); vig.fillRect(0, 0, W * 0.09, H);
+    vig.fillStyle(0x000000, 0.18); vig.fillRect(W * 0.91, 0, W * 0.09, H);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -238,6 +275,11 @@ class Level4 extends Phaser.Scene {
     g.strokeRect(x - w/2, y - h/2, w, h);
     g.lineStyle(1, 0xe0f2fe, a * 0.3);
     g.strokeRect(x - w/2 + 2, y - h/2 + 2, w - 4, h - 4);
+    // Visible crack lines in the ice surface
+    g.lineStyle(1, 0x7dd3fc, a * 0.55);
+    g.lineBetween(x - w*0.08, y - h/2, x + w*0.12, y + h/2);
+    g.lineStyle(0.8, 0x7dd3fc, a * 0.40);
+    g.lineBetween(x + w*0.18, y - h/2, x + w*0.05, y + h/2);
 
     const body = this.physics.add.staticImage(x, y, null).setVisible(false);
     body.setDisplaySize(w, h); body.refreshBody();
@@ -470,12 +512,14 @@ class Level4 extends Phaser.Scene {
       [3420, 300],
     ].forEach(([x, y]) => {
       const g = this.add.graphics().setDepth(4);
-      g.fillStyle(0x67e8f9, 0.20); g.fillCircle(x, y, 18);
-      g.fillStyle(0xbae6fd, 0.14); g.fillCircle(x, y, 14);
-      g.fillStyle(L4_PAL.gold,  0.92); g.fillCircle(x, y,  8);
-      g.fillStyle(0xffffff,     0.65); g.fillCircle(x-2, y-2, 3);
+      g.fillStyle(0x67e8f9,    0.07); g.fillCircle(x, y, 28); // far glow
+      g.fillStyle(0x67e8f9,    0.14); g.fillCircle(x, y, 22); // outer bloom
+      g.fillStyle(0xbae6fd,    0.20); g.fillCircle(x, y, 16); // mid bloom
+      g.fillStyle(L4_PAL.gold, 0.92); g.fillCircle(x, y,  9); // core
+      g.fillStyle(0xffffff,    0.75); g.fillCircle(x-3, y-3,  4); // highlight
+      g.fillStyle(0xffffff,    0.38); g.fillCircle(x+2,  y+2, 2); // secondary
       this.tweens.add({
-        targets: g, alpha: 0.42, duration: 900, yoyo: true, repeat: -1,
+        targets: g, alpha: 0.32, duration: 1100, yoyo: true, repeat: -1,
         ease: 'Sine.easeInOut',
       });
 

@@ -337,25 +337,42 @@ class IntroCutscene extends Phaser.Scene {
     const W = this.scale.width;
     const H = this.scale.height;
 
-    // ── Layered starfield
-    const stars1 = this.add.graphics().setDepth(0);
-    const stars2 = this.add.graphics().setDepth(1);
-    this._drawStars(stars1, 180, W, H);
-    this._drawStars(stars2, 80, W, H);
-    // Twinkle the brighter layer
-    this.tweens.add({ targets: stars2, alpha: 0.4, duration: 2200, yoyo: true, repeat: -1 });
+    // ── Deep-space background
+    const bg = this.add.graphics().setDepth(0);
+    bg.fillStyle(0x010614, 1);
+    bg.fillRect(0, 0, W, H);
+
+    // ── Distant nebula wisps (subtle atmosphere behind everything)
+    const nebula = this.add.graphics().setDepth(1);
+    nebula.fillStyle(0x1e1b4b, 0.22); nebula.fillEllipse(W * 0.15, H * 0.5, W * 0.55, H * 0.65);
+    nebula.fillStyle(0x312e81, 0.12); nebula.fillEllipse(W * 0.25, H * 0.35, W * 0.40, H * 0.50);
+    nebula.fillStyle(0x4c1d95, 0.09); nebula.fillEllipse(W * 0.70, H * 0.70, W * 0.45, H * 0.40);
+    nebula.fillStyle(0x831843, 0.07); nebula.fillEllipse(W * 0.60, H * 0.20, W * 0.35, H * 0.30);
+    // Slow nebula breathe
+    this.tweens.add({ targets: nebula, alpha: 0.55, duration: 5000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+    // ── Layered starfield — more stars, 3 depth layers
+    const stars1 = this.add.graphics().setDepth(2);
+    const stars2 = this.add.graphics().setDepth(3);
+    const stars3 = this.add.graphics().setDepth(4);
+    this._drawStars(stars1, 280, W, H);   // deep background stars
+    this._drawStars(stars2, 140, W, H);   // mid-layer
+    this._drawStars(stars3, 60,  W, H);   // bright foreground specks
+    // Offset twinkle phases so layers cycle independently
+    this.tweens.add({ targets: stars2, alpha: 0.45, duration: 2200, yoyo: true, repeat: -1 });
+    this.tweens.add({ targets: stars3, alpha: 0.30, duration: 3100, yoyo: true, repeat: -1, delay: 800 });
 
     // ── Amber planet — rich glow
-    const planet = this.add.graphics().setDepth(2);
+    const planet = this.add.graphics().setDepth(5);
     planet.fillStyle(0x92400e, 0.08); planet.fillCircle(W * 0.82, H * 0.22, 340);
     planet.fillStyle(0xd97706, 0.14); planet.fillCircle(W * 0.82, H * 0.22, 240);
     planet.fillStyle(0xf59e0b, 0.09); planet.fillCircle(W * 0.82, H * 0.22, 160);
     planet.fillStyle(0xfbbf24, 0.05); planet.fillCircle(W * 0.82, H * 0.22, 90);
 
     // ── Ship — two hull panels connected
-    this._shipLeft  = this.add.graphics().setDepth(5);
-    this._shipRight = this.add.graphics().setDepth(5);
-    this._bridge    = this.add.graphics().setDepth(6);
+    this._shipLeft  = this.add.graphics().setDepth(7);
+    this._shipRight = this.add.graphics().setDepth(7);
+    this._bridge    = this.add.graphics().setDepth(8);
 
     this._drawShipPanel(this._shipLeft,  W/2 - 62, H/2 - 10, 100, 54);
     this._drawShipPanel(this._shipRight, W/2 + 62, H/2 - 10, 100, 54);

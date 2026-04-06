@@ -73,6 +73,18 @@ class Level3 extends Phaser.Scene {
 
     this.cameras.main.fadeIn(700, 20, 5, 0);
 
+    this.time.delayedCall(350, () => {
+      const W = this.scale.width, H = this.scale.height, dpr = window.devicePixelRatio || 1;
+      const card = this.add.text(W / 2, H * 0.38, 'LEVEL 3\nMARS', {
+        fontSize: '28px', fontFamily: 'Georgia, serif', fontStyle: 'bold italic',
+        color: '#f59e0b', align: 'center', resolution: dpr,
+        stroke: '#1a0a00', strokeThickness: 5, lineSpacing: 6,
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(50).setAlpha(0);
+      this.tweens.add({ targets: card, alpha: 1, duration: 700, onComplete: () => {
+        this.time.delayedCall(1600, () => this.tweens.add({ targets: card, alpha: 0, duration: 700, onComplete: () => card.destroy() }));
+      }});
+    });
+
     this.time.delayedCall(1800, () => {
       if (!this._welcomeDone) {
         this._welcomeDone = true;
@@ -171,19 +183,27 @@ class Level3 extends Phaser.Scene {
       energyLines.lineBetween(ex + 10, 80, ex + 10, L3_H - 100);
     });
 
-    // Ambient dust motes drifting upward (static dots — animated in update)
-    // We'll use a simple graphics layer for initial placement
+    // Ambient dust motes drifting upward — more atmospheric
     this._dustGraphics = this.add.graphics().setScrollFactor(0.06).setDepth(-5);
     this._dustPositions = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 90; i++) {
       const dx = Phaser.Math.Between(80, L3_W - 80);
       const dy = Phaser.Math.Between(0, L3_H);
-      const ds = Math.random() * 1.8 + 0.4;
-      const da = Math.random() * 0.35 + 0.08;
-      const spd = Math.random() * 0.3 + 0.1;
+      const ds = Math.random() * 2.2 + 0.4;
+      const da = Math.random() * 0.40 + 0.08;
+      const spd = Math.random() * 0.35 + 0.08;
       this._dustPositions.push({ x: dx, y: dy, s: ds, a: da, spd });
     }
     this._redrawDust();
+
+    // Cinematic vignette
+    const vig = this.add.graphics().setScrollFactor(0).setDepth(29);
+    vig.fillStyle(0x000000, 0.40); vig.fillRect(0, 0, W * 0.18, H);
+    vig.fillStyle(0x000000, 0.40); vig.fillRect(W * 0.82, 0, W * 0.18, H);
+    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, 0, W, H * 0.10);
+    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, H * 0.90, W, H * 0.10);
+    vig.fillStyle(0x000000, 0.18); vig.fillRect(0, 0, W * 0.09, H);
+    vig.fillStyle(0x000000, 0.18); vig.fillRect(W * 0.91, 0, W * 0.09, H);
   }
 
   _redrawDust() {
@@ -300,15 +320,21 @@ class Level3 extends Phaser.Scene {
     g.lineStyle(1.5, L3_PAL.amber, 0.55);
     g.strokeRect(x - w/2, y - h/2, w, h);
 
+    // Horizontal carved grooves
+    g.lineStyle(0.8, L3_PAL.amber, 0.20);
+    g.lineBetween(x - w/2 + 6, y, x + w/2 - 6, y);
     // Small glyph marks on wider platforms
     if (w >= 160) {
-      g.fillStyle(L3_PAL.glyph, 0.30);
+      g.fillStyle(L3_PAL.glyph, 0.35);
       const marks = Math.floor(w / 80);
       for (let m = 0; m < marks; m++) {
         const mx = x - w/2 + 40 + m * 80;
         g.fillTriangle(mx, y - h/2 + 3, mx - 5, y - h/2 + 10, mx + 5, y - h/2 + 10);
       }
     }
+    // Crumble hint at corners
+    g.fillStyle(0x44403c, 0.45);
+    g.fillTriangle(x - w/2, y + h/2, x - w/2 + 7, y + h/2, x - w/2, y + h/2 - 5);
 
     const body = this.physics.add.staticImage(x, y, null).setVisible(false);
     body.setDisplaySize(w, h); body.refreshBody();
@@ -337,12 +363,14 @@ class Level3 extends Phaser.Scene {
 
     positions.forEach(([x, y]) => {
       const g = this.add.graphics().setDepth(4);
-      g.fillStyle(L3_PAL.rust,  0.20); g.fillCircle(x, y, 18);
-      g.fillStyle(L3_PAL.amber, 0.14); g.fillCircle(x, y, 14);
-      g.fillStyle(L3_PAL.gold,  0.92); g.fillCircle(x, y,  8);
-      g.fillStyle(0xffffff,     0.65); g.fillCircle(x-2, y-2, 3);
+      g.fillStyle(L3_PAL.rust,  0.07);  g.fillCircle(x, y, 28); // far glow
+      g.fillStyle(L3_PAL.amber, 0.13);  g.fillCircle(x, y, 22); // outer bloom
+      g.fillStyle(L3_PAL.gold,  0.20);  g.fillCircle(x, y, 16); // mid bloom
+      g.fillStyle(L3_PAL.gold,  0.92);  g.fillCircle(x, y,  9); // core
+      g.fillStyle(0xffffff,     0.75);  g.fillCircle(x-3, y-3,  4); // highlight
+      g.fillStyle(0xffffff,     0.38);  g.fillCircle(x+2,  y+2, 2); // secondary
       this.tweens.add({
-        targets: g, alpha: 0.42, duration: 900, yoyo: true, repeat: -1,
+        targets: g, alpha: 0.32, duration: 1100, yoyo: true, repeat: -1,
         ease: 'Sine.easeInOut',
       });
 
