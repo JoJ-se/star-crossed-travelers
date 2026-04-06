@@ -1126,35 +1126,35 @@ class Level4 extends Phaser.Scene {
   }
 
   _runEndingDialogue() {
-    // Reset camera zoom to 1.0 immediately so all screen-space panels
-    // render at the correct scale (zoom 1.22 from the hug cinematic would
-    // scale even setScrollFactor(0) objects and push them off-screen).
+    // Reset camera zoom to 1.0 so all screen-space panels render at 1:1 scale.
     this.cameras.main.zoomTo(1.0, 550, 'Sine.easeInOut');
 
-    // Start dialogue after zoom finishes
     this.time.delayedCall(600, () => {
-      // 1. Elina
+      // 1. Bichilin
       this._showEndingDialogue('bichilin', "Joao! I saved the ice cream for you.", 1400, () => {
         // 2. Joao
         this._showEndingDialogue('joao', "You should have eaten it, Bichilin...", 1400, () => {
-          // 3. Elina
+          // 3. Bichilin
           this._showEndingDialogue('bichilin', "...But...we always do it together.", 1400, () => {
             // 4. Joao
             this._showEndingDialogue('joao', "(-3-)", 1400, () => {
-              // 5. Elina
-              this._showEndingDialogue('bichilin', "Now...do you want to flight to earth to grab some Macdonalds..?", 1800, () => {
-                // Rocky — four messages
-                this._queueRocky(
-                  "Four planets. A debris field, a nebula, an ancient Martian structure, a philosophical Chinese man, and an asteroid. All of that — for ice cream and a hug.",
-                  5500
-                );
-                this._queueRocky("...Humans are absolutely insane.", 4500);
-                this._queueRocky("...I'd do it again though.", 4000);
-                this._queueRocky(
-                  "It is always the best time! When we are together.",
-                  4500,
-                  () => this._runCredits()
-                );
+              // 5. Bichilin
+              this._showEndingDialogue('bichilin', ".....Now...do you want to flight to earth to grab some Macdonalds..?", 1800, () => {
+                // 6. Joao
+                this._showEndingDialogue('joao', "Bichilin.....", 1800, () => {
+                  // Rocky — four messages
+                  this._queueRocky(
+                    "Four planets. A debris field, a nebula, an ancient Martian structure, a philosophical Chinese man, and an asteroid. All of that — for ice cream and a hug.",
+                    5500
+                  );
+                  this._queueRocky("...Humans are absolutely insane.", 4500);
+                  this._queueRocky("...I'd do it again though.", 4000);
+                  this._queueRocky(
+                    "It is always the best time! When we are together.",
+                    4500,
+                    () => this._runCredits()
+                  );
+                });
               });
             });
           });
@@ -1164,53 +1164,60 @@ class Level4 extends Phaser.Scene {
   }
 
   _runCredits() {
-    // Fade to black — camera is already at zoom 1.0 at this point
-    this.cameras.main.fadeOut(1400, 3, 7, 18);
-    this.cameras.main.once('camerafadeoutcomplete', () => {
-      const W   = this.scale.width;
-      const H   = this.scale.height;
-      const dpr = window.devicePixelRatio || 1;
+    // BUG FIX: camera.fadeOut() keeps a black overlay active after completion,
+    // rendering any new objects added in the callback invisible beneath it.
+    // Solution: use a manual screen-space black graphics rect at depth 55,
+    // tween it to alpha 1, then add text at depth 60 (above the rect).
+    const W   = this.scale.width;
+    const H   = this.scale.height;
+    const dpr = window.devicePixelRatio || 1;
 
-      const lineStyle = {
-        fontFamily: 'Georgia, serif',
-        fontStyle:  'italic',
-        align:      'center',
-        resolution: dpr,
-        wordWrap:   { width: Math.min(W * 0.82, 560) },
-        lineSpacing: 8,
-      };
+    const blackout = this.add.graphics().setScrollFactor(0).setDepth(55).setAlpha(0);
+    blackout.fillStyle(0x000000, 1);
+    blackout.fillRect(0, 0, W, H);
 
-      // Rocky's first post-credits line types out on the black screen
-      const msg1 = this.add.text(W / 2, H / 2 - 28, '', {
-        ...lineStyle,
-        fontSize: '21px',
-        color:    '#9ca3af',
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
+    this.tweens.add({
+      targets: blackout,
+      alpha: 1,
+      duration: 1400,
+      ease: 'Sine.easeIn',
+      onComplete: () => {
+        // First Rocky message — grey italic, types out word by word
+        const msg1 = this.add.text(W / 2, H / 2 - 32, '', {
+          fontSize: '21px', fontFamily: 'Georgia, serif',
+          fontStyle: 'italic', color: '#9ca3af',
+          align: 'center', resolution: dpr,
+          wordWrap: { width: Math.min(W * 0.82, 560) },
+          lineSpacing: 8,
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
 
-      this.tweens.add({ targets: msg1, alpha: 1, duration: 700, ease: 'Sine.easeOut' });
+        this.tweens.add({ targets: msg1, alpha: 1, duration: 700, ease: 'Sine.easeOut' });
 
-      this._typeWords(msg1, "And, humans.... what is a 'Macdonalds'?", 90, () => {
-        // Short pause then second line appears below
-        this.time.delayedCall(2200, () => {
-          const msg2 = this.add.text(W / 2, H / 2 + 52, '', {
-            ...lineStyle,
-            fontSize: '21px',
-            color:    '#fcd34d',
-          }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
+        this._typeWords(msg1, "And, humans.... what is a 'Macdonalds'?", 90, () => {
+          // 2 second pause then second message
+          this.time.delayedCall(2000, () => {
+            const msg2 = this.add.text(W / 2, H / 2 + 54, '', {
+              fontSize: '21px', fontFamily: 'Georgia, serif',
+              fontStyle: 'italic', color: '#fcd34d',
+              align: 'center', resolution: dpr,
+              wordWrap: { width: Math.min(W * 0.82, 560) },
+              lineSpacing: 8,
+            }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
 
-          this.tweens.add({ targets: msg2, alpha: 1, duration: 500, ease: 'Sine.easeOut' });
+            this.tweens.add({ targets: msg2, alpha: 1, duration: 500, ease: 'Sine.easeOut' });
 
-          this._typeWords(msg2, "Is it a kind of Space potato?", 90, () => {
-            // Hold the final moment, then gently fade out
-            this.time.delayedCall(5000, () => {
-              this.tweens.add({
-                targets: [msg1, msg2],
-                alpha: 0, duration: 1600, ease: 'Sine.easeIn',
+            this._typeWords(msg2, "Is it a kind of Space potato?", 90, () => {
+              // Hold, then fade both messages out gently
+              this.time.delayedCall(5000, () => {
+                this.tweens.add({
+                  targets: [msg1, msg2],
+                  alpha: 0, duration: 1600, ease: 'Sine.easeIn',
+                });
               });
             });
           });
         });
-      });
+      },
     });
   }
 
