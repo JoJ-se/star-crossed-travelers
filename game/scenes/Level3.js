@@ -75,7 +75,7 @@ class Level3 extends Phaser.Scene {
       if (!this._welcomeDone) {
         this._welcomeDone = true;
         this._queueRocky(
-          "Someone built this a very long time ago. I'm not saying it was my people. But it was my people.",
+          "You know what we say back home on Erin - 'Elina looking over her glasses when she speaks? like studying Mars through a lens - taking it all in without getting too close too fast.",
           5500
         );
       }
@@ -810,7 +810,7 @@ class Level3 extends Phaser.Scene {
     if (!this._halfwayDone && joao.y < L3_H - 2100) {
       this._halfwayDone = true;
       this._queueRocky(
-        "We're halfway up. Don't look down. Actually — do. It'll motivate you.",
+        "We're halfway up. Don't look down. Actually - do. it'll motivate you.",
         4200
       );
     }
