@@ -637,12 +637,21 @@ class CosmicTeaPlanet extends Phaser.Scene {
 
             // Asteroid falls
             this._dropAsteroid(() => {
-              this._showBBDialogue(
-                "…WHAT IN THE NAME OF THE EMPEROR IS THAT?! An asteroid! Direct hit to my tea garden! And the wormhole to Elina's planet just collapsed! Next time, choose faster — or we'll both be buried under asteroid dust and dumpling wrappers!",
-                () => {
-                  this._showMissionFailed();
-                }
-              );
+              // Rocky panics FIRST — he sees it before Big Brother reacts
+              this._queueRocky("Human! The asteroid — WE HAVE TO GO!!", 2500, () => {
+                // THEN Big Brother looks up in mock horror
+                this._showBBDialogue(
+                  "…WHAT IN THE NAME OF THE EMPEROR IS THAT?!",
+                  () => {
+                    this._showBBDialogue(
+                      "An asteroid! Direct hit to my tea garden! And the wormhole to Elina's planet just collapsed! Next time, choose faster — or we'll both be buried under asteroid dust and dumpling wrappers!",
+                      () => {
+                        this._showMissionFailed();
+                      }
+                    );
+                  }
+                );
+              });
             });
           }
         );
@@ -771,10 +780,6 @@ class CosmicTeaPlanet extends Phaser.Scene {
       targets: [dimmer, panel, title, body, tryBtn, tryTxt],
       alpha: 1,
       duration: 350,
-      onComplete: () => {
-        // Rocky fires after overlay appears
-        this._queueRocky("Human! The asteroid — WE HAVE TO GO!!", 3800);
-      },
     });
   }
 
