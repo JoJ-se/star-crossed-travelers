@@ -653,10 +653,12 @@ class CosmicTeaPlanet extends Phaser.Scene {
             flash.fillRect(0, 0, this._W, this._H);
             this.tweens.add({ targets: flash, alpha: 0, duration: 500, onComplete: () => flash.destroy() });
 
-            // Asteroid + Rocky fire simultaneously — Rocky's bubble appears
-            // at the exact same moment the asteroid enters the screen
-            this._dropAsteroid(() => {
-              // Asteroid has landed — now Big Brother reacts (Rocky already speaking)
+            // Asteroid falls immediately (visual only — no callback drives the sequence)
+            this._dropAsteroid(null);
+
+            // 1. Rocky appears immediately, holds for exactly 2 seconds
+            // 2. Only after Rocky clears → Big Brother reacts
+            this._queueRocky("Human! The asteroid — WE HAVE TO GO!!", 2000, () => {
               this._showBBDialogue(
                 "…WHAT IN THE NAME OF THE EMPEROR IS THAT?!",
                 () => {
@@ -669,9 +671,6 @@ class CosmicTeaPlanet extends Phaser.Scene {
                 }
               );
             });
-
-            // Rocky fires at the same time the asteroid drop begins
-            this._queueRocky("Human! The asteroid — WE HAVE TO GO!!", 2500);
           }
         );
       }
