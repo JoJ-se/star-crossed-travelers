@@ -88,7 +88,7 @@ class Level4 extends Phaser.Scene {
       if (!this._welcomeDone) {
         this._welcomeDone = true;
         this._queueRocky(
-          "Here we are - Frozen moon aka Ice-cream planet. Cold. Slippery. I bet your girl could use a hug.",
+          "Frozen Moon. She's here. I have no sensor for it. But I've been traveling with you long enough to know — when you're this close to her, something shifts.",
           4500
         );
       }
@@ -1185,15 +1185,15 @@ class Level4 extends Phaser.Scene {
 
     this.time.delayedCall(600, () => {
       // 1. Bichilin
-      this._showEndingDialogue('bichilin', "Joao! I saved the ice cream for you.", 1400, () => {
+      this._showEndingDialogue('bichilin', "Joao... I knew you'd make it. I saved the ice cream for us", 1400, () => {
         // 2. Joao
-        this._showEndingDialogue('joao', "You should have eaten it, Bichilin...", 1400, () => {
+        this._showEndingDialogue('joao', "Bichilin... you actually waited. You should have eaten it.", 1400, () => {
           // 3. Bichilin
           this._showEndingDialogue('bichilin', "...But...we always do it together.", 1400, () => {
             // 4. Joao
-            this._showEndingDialogue('joao', "(-3-)", 1400, () => {
+            this._showEndingDialogue('joao', "Come here. (-3-)", 1400, () => {
               // 5. Bichilin
-              this._showEndingDialogue('bichilin', ".....Now...do you wanna fly back to Earth and grab some Mcdonalds..?", 3000, () => {
+              this._showEndingDialogue('bichilin', "Now... should we fly back to Earth and get some McDonalds?", 3000, () => {
                 // 6. Joao
                 this._showEndingDialogue('joao', "Bichilin.....", 3000, () => {
                   // Rocky — four messages
