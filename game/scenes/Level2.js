@@ -323,7 +323,7 @@ class Level2 extends Phaser.Scene {
     if (!this._firstBeaconDone) {
       this._firstBeaconDone = true;
       this.time.delayedCall(200, () => {
-        this._queueRocky("Light it up. Smart move. Perfectionista.", 4000);
+        this._queueRocky("Light it up. Smart. Perfectionista.", 4000);
       });
     }
   }
