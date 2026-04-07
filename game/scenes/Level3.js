@@ -89,7 +89,7 @@ class Level3 extends Phaser.Scene {
       if (!this._welcomeDone) {
         this._welcomeDone = true;
         this._queueRocky(
-          "You know what we say back home on Erin - 'Elina looking over her glasses when she speaks? like studying Mars through a lens - taking it all in without getting too close too fast.",
+          "On Erin we don't really have a word for 'missing someone.' We just... move toward them. Which is exactly what you're doing. Keep going.",
           5500
         );
       }
@@ -774,7 +774,7 @@ class Level3 extends Phaser.Scene {
   _completeLevel() {
     this._levelComplete = true;
     this._queueRocky(
-      "All done here! Ready to cross the galaxy for her?",
+      "Mars — behind us. Pedro decoded three words so far..he'll get there. Emm eventually. One planet left! Go get her, Joao.",
       6000
     );
 
@@ -852,14 +852,14 @@ class Level3 extends Phaser.Scene {
     // ── Mid-early climb — Beijing joke from Level 2 transition (y < 2800)
     if (!this._beijingJokeDone && joao.y < L3_H - 1400) {
       this._beijingJokeDone = true;
-      this._queueRocky("That one was harsh!..But Beijing goodbye is way worse, right?", 4000);
+      this._queueRocky("Mars is harsh. But you know what's harsher? Goodbye at Earth airports. At least out here there's no gate number to walk away from", 4000);
     }
 
     // ── Rocky mid-way trigger
     if (!this._halfwayDone && joao.y < L3_H - 2100) {
       this._halfwayDone = true;
       this._queueRocky(
-        "We're halfway up. Don't look down. Actually - do. it'll motivate you.",
+        "Oh — Pedro tried to reach you. Three times. I intercepted the signal and sent back an encrypted response. He's been trying to decode it for six hours now.",
         4200
       );
     }
@@ -868,7 +868,7 @@ class Level3 extends Phaser.Scene {
     if (!this._bossReachedDone && joao.y < L3_H - 3400) {
       this._bossReachedDone = true;
       this._queueRocky(
-        "And that thing up there. Any ideas? ...yeah, looks like Elina's mood sometimes...Don't tell her i said that",
+        "I asked Elina once why she looks over her glasses. She said 'to see what's really there.' Still thinking about that one..Maybe it's an encryption too",
         6500
       );
     }
