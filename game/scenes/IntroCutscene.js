@@ -243,54 +243,74 @@ class IntroCutscene extends Phaser.Scene {
     const W   = this.scale.width;
     const H   = this.scale.height;
     const dpr = window.devicePixelRatio || 1;
+    const isMobile = W < 600;
 
-    // Dark veil
+    // ── Full-screen deep black veil
     const vignette = this.add.graphics().setDepth(18);
-    vignette.fillStyle(0x000000, 0.62);
+    vignette.fillStyle(0x030712, 1);
     vignette.fillRect(0, 0, W, H);
 
-    // Cinematic card — right half, never overlaps Joao (left side)
-    const isMobile = W < 600;
-    const cardX   = isMobile ? 12 : Math.round(W * 0.48);
-    const cardW   = isMobile ? W - 24 : W - cardX - 16;
-    const cardPad = 22;
+    // ── Card area (right half on desktop, full width on mobile)
+    const cardX  = isMobile ? 12 : Math.round(W * 0.48);
+    const cardW  = isMobile ? W - 24 : W - cardX - 16;
+    const cardCX = cardX + cardW / 2;
+    const cardCY = H * 0.47;
+    const textX  = cardX + 22;
+    const maxW   = cardW - 44;
 
-    // Subtle card background for readability
-    const card = this.add.graphics().setDepth(19);
-    card.fillStyle(0x020b18, 0.72);
-    card.fillRoundedRect(cardX, H * 0.12, cardW, H * 0.70, 10);
-    card.lineStyle(1, 0x6366f1, 0.3);
-    card.strokeRoundedRect(cardX, H * 0.12, cardW, H * 0.70, 10);
+    // ── Subtle radial depth glow + scattered star texture on the card area
+    const glow = this.add.graphics().setDepth(19);
+    glow.fillStyle(0x1e1b4b, 0.16); glow.fillEllipse(cardCX, cardCY, cardW * 0.9, H * 0.55);
+    glow.fillStyle(0x312e81, 0.09); glow.fillEllipse(cardCX, cardCY, cardW * 0.5,  H * 0.32);
+    // Micro star dots scattered across card
+    for (let i = 0; i < 45; i++) {
+      const sx = cardX + Math.random() * cardW;
+      const sy = H * 0.10 + Math.random() * H * 0.72;
+      glow.fillStyle(0xffffff, Math.random() * 0.22 + 0.04);
+      glow.fillCircle(sx, sy, Math.random() * 1.1 + 0.3);
+    }
 
-    const textX = cardX + cardPad;
-    const maxW  = cardW - cardPad * 2;
+    // ── Font + shadow used for every text object
+    const FONT       = "'Palatino Linotype', Palatino, serif";
+    const bodySize   = isMobile ? '15px' : '18px';
+    const finalSize  = isMobile ? '19px' : '24px';
+    const textShadow = { offsetX: 0, offsetY: 0, color: 'rgba(252,211,77,0.30)', blur: 10, fill: true };
 
     const lines = [
-      { text: 'A cosmic storm tore through the galaxy without warning.',
-        size: isMobile ? '15px' : '17px', family: 'Georgia, serif',
-        color: '#94a3b8', style: 'italic', y: H * 0.20 },
-      { text: "Joao and Elina's ship split in two.",
-        size: isMobile ? '18px' : '22px', family: 'Georgia, serif',
-        color: '#e2e8f0', style: 'bold italic', y: H * 0.32 },
-      { text: 'She drifted toward the legendary Ice-Cream Planet — ice cream in hand, completely unbothered.',
-        size: isMobile ? '14px' : '16px', family: 'Georgia, serif',
-        color: '#94a3b8', style: 'italic', y: H * 0.44 },
-      { text: 'Classic Elina.',
-        size: isMobile ? '18px' : '22px', family: 'Georgia, serif',
-        color: '#cbd5e1', style: 'bold italic', y: H * 0.58 },
-      { text: 'He has to find her.',
-        size: isMobile ? '22px' : '28px', family: 'Georgia, serif',
-        color: '#fcd34d', style: 'bold', y: H * 0.69 },
+      { text: 'A cosmic storm tore through the galaxy without warning.',                                       y: H * 0.20 },
+      { text: "Joao and Elina's ship split in two.",                                                           y: H * 0.32 },
+      { text: 'She drifted toward the legendary Ice-Cream Planet — ice cream in hand, completely unbothered.', y: H * 0.44 },
+      { text: 'Classic Elina.',                                                                                y: H * 0.58 },
+      { text: 'He has to find her.',                                                                           y: H * 0.69, isFinal: true },
     ];
 
-    const textObjs = [card];
+    // ── Thin gold horizontal lines — one above every text block, one below the last
+    const decorLines = this.add.graphics().setDepth(20).setAlpha(0);
+    lines.forEach(({ y }) => {
+      decorLines.lineStyle(1, 0xfcd34d, 0.38);
+      decorLines.beginPath();
+      decorLines.moveTo(textX, y - 9);
+      decorLines.lineTo(textX + maxW, y - 9);
+      decorLines.strokePath();
+    });
+    const lastLineBottom = lines[lines.length - 1].y + (isMobile ? 30 : 36);
+    decorLines.lineStyle(1, 0xfcd34d, 0.38);
+    decorLines.beginPath();
+    decorLines.moveTo(textX, lastLineBottom);
+    decorLines.lineTo(textX + maxW, lastLineBottom);
+    decorLines.strokePath();
+    this.tweens.add({ targets: decorLines, alpha: 1, duration: 600, delay: 350 });
+
+    const textObjs = [glow, decorLines];
+
     const typeNextLine = (idx) => {
       if (idx >= lines.length) {
         const hint = this.add.text(textX, H * 0.82, 'tap / space to continue', {
           fontSize: isMobile ? '12px' : '13px',
-          fontFamily: 'Georgia, serif',
+          fontFamily: FONT,
           fontStyle: 'italic',
           color: '#818cf8',
+          letterSpacing: 1,
           resolution: dpr,
         }).setDepth(21).setAlpha(0);
         this.tweens.add({ targets: hint, alpha: 1, duration: 400, delay: 300 });
@@ -309,16 +329,18 @@ class IntroCutscene extends Phaser.Scene {
         return;
       }
 
-      const { text, size, family, color, style, y } = lines[idx];
+      const { text, y, isFinal } = lines[idx];
       const t = this.add.text(textX, y, '', {
-        fontSize: size,
-        fontFamily: family,
-        fontStyle: style,
-        color,
-        wordWrap: { width: maxW },
-        lineSpacing: 6,
-        resolution: dpr,
-      }).setDepth(20).setAlpha(0);
+        fontSize:     isFinal ? finalSize : bodySize,
+        fontFamily:   FONT,
+        fontStyle:    'italic',
+        color:        isFinal ? '#fcd34d' : '#ffffff',
+        shadow:       textShadow,
+        letterSpacing: isFinal ? 3 : 1,
+        wordWrap:     { width: maxW },
+        lineSpacing:  6,
+        resolution:   dpr,
+      }).setDepth(21).setAlpha(0);
       textObjs.push(t);
 
       this.tweens.add({ targets: t, alpha: 1, duration: 300 });
