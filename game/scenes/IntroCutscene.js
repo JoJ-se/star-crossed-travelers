@@ -245,30 +245,19 @@ class IntroCutscene extends Phaser.Scene {
     const dpr = window.devicePixelRatio || 1;
     const isMobile = W < 600;
 
-    // ── Full-screen deep black veil
-    const vignette = this.add.graphics().setDepth(18);
-    vignette.fillStyle(0x030712, 1);
-    vignette.fillRect(0, 0, W, H);
-
     // ── Card area (right half on desktop, full width on mobile)
-    const cardX  = isMobile ? 12 : Math.round(W * 0.48);
-    const cardW  = isMobile ? W - 24 : W - cardX - 16;
-    const cardCX = cardX + cardW / 2;
-    const cardCY = H * 0.47;
-    const textX  = cardX + 22;
-    const maxW   = cardW - 44;
+    const cardX = isMobile ? 12 : Math.round(W * 0.48);
+    const cardW = isMobile ? W - 24 : W - cardX - 16;
+    const textX = cardX + 22;
+    const maxW  = cardW - 44;
 
-    // ── Subtle radial depth glow + scattered star texture on the card area
-    const glow = this.add.graphics().setDepth(19);
-    glow.fillStyle(0x1e1b4b, 0.16); glow.fillEllipse(cardCX, cardCY, cardW * 0.9, H * 0.55);
-    glow.fillStyle(0x312e81, 0.09); glow.fillEllipse(cardCX, cardCY, cardW * 0.5,  H * 0.32);
-    // Micro star dots scattered across card
-    for (let i = 0; i < 45; i++) {
-      const sx = cardX + Math.random() * cardW;
-      const sy = H * 0.10 + Math.random() * H * 0.72;
-      glow.fillStyle(0xffffff, Math.random() * 0.22 + 0.04);
-      glow.fillCircle(sx, sy, Math.random() * 1.1 + 0.3);
-    }
+    // ── Semi-transparent card behind the text only — cosmic scene shows through
+    const firstY = H * 0.20;
+    const lastY  = H * 0.69 + (isMobile ? 32 : 38);
+    const cardPad = 18;
+    const card = this.add.graphics().setDepth(18);
+    card.fillStyle(0x030712, 0.65);
+    card.fillRoundedRect(cardX, firstY - cardPad, cardW, lastY - firstY + cardPad * 2, 12);
 
     // ── Font + shadow used for every text object
     const FONT       = "'Palatino Linotype', Palatino, serif";
@@ -284,24 +273,7 @@ class IntroCutscene extends Phaser.Scene {
       { text: 'He has to find her.',                                                                           y: H * 0.69, isFinal: true },
     ];
 
-    // ── Thin gold horizontal lines — one above every text block, one below the last
-    const decorLines = this.add.graphics().setDepth(20).setAlpha(0);
-    lines.forEach(({ y }) => {
-      decorLines.lineStyle(1, 0xfcd34d, 0.38);
-      decorLines.beginPath();
-      decorLines.moveTo(textX, y - 9);
-      decorLines.lineTo(textX + maxW, y - 9);
-      decorLines.strokePath();
-    });
-    const lastLineBottom = lines[lines.length - 1].y + (isMobile ? 30 : 36);
-    decorLines.lineStyle(1, 0xfcd34d, 0.38);
-    decorLines.beginPath();
-    decorLines.moveTo(textX, lastLineBottom);
-    decorLines.lineTo(textX + maxW, lastLineBottom);
-    decorLines.strokePath();
-    this.tweens.add({ targets: decorLines, alpha: 1, duration: 600, delay: 350 });
-
-    const textObjs = [glow, decorLines];
+    const textObjs = [card];
 
     const typeNextLine = (idx) => {
       if (idx >= lines.length) {
@@ -320,7 +292,6 @@ class IntroCutscene extends Phaser.Scene {
           this.input.off('pointerdown', dismiss);
           this.input.keyboard.off('keydown-SPACE', dismiss);
           textObjs.forEach(t => { if (t && t.destroy) t.destroy(); });
-          vignette.destroy();
           hint.destroy();
           if (onDone) onDone();
         };
