@@ -544,7 +544,7 @@ class Level1 extends Phaser.Scene {
         this._firstOrbDone = true;
         this.time.delayedCall(300, () => {
           this._queueRocky(
-            "Glowing orb looks like a tiny moon - that's what Elina would say. Sob sob (-^-) So many cute Space things!",
+            "Glowing orb looks like a tiny moon - that's what Elina would say. So many cute Space things!",
             3500
           );
         });
@@ -668,11 +668,11 @@ class Level1 extends Phaser.Scene {
     // ── Position-based Rocky triggers (spread across the level)
     if (!this._dudeJokeDone && joao.x > 1600) {
       this._dudeJokeDone = true;
-      this._queueRocky("I heard your human calls you 'Dude'. What is a dude? Is it a type of space potato?", 4500);
+      this._queueRocky("I heard your human calls you 'Dude'. What is a 'dude'? Is it a type of space potato?", 4500);
     }
     if (!this._starfishDone && joao.x > 2700) {
       this._starfishDone = true;
-      this._queueRocky("See? Not hard. Though you looked like a confused starfish doing it. So sad Elina couldn't see it :(", 4500);
+      this._queueRocky("See? Not hard. Though you looked like a confused starfish doing it. Elina would have laughed. Then hugged you anyway.", 4500);
     }
 
     // ── Hazard rotation + collision
