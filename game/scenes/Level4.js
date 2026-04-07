@@ -1185,11 +1185,11 @@ class Level4 extends Phaser.Scene {
 
     this.time.delayedCall(600, () => {
       // 1. Bichilin
-      this._showEndingDialogue('bichilin', "Joao... I knew you'd make it. I saved the ice cream for us", 1400, () => {
+      this._showEndingDialogue('bichilin', "Joao... I knew you'd make it. I saved the ice cream for us!", 1400, () => {
         // 2. Joao
-        this._showEndingDialogue('joao', "Bichilin... you actually waited. You should have eaten it.", 1400, () => {
+        this._showEndingDialogue('joao', "Bichilin... you actually waited..You should have eaten it!", 1400, () => {
           // 3. Bichilin
-          this._showEndingDialogue('bichilin', "...But...we always do it together.", 1400, () => {
+          this._showEndingDialogue('bichilin', "...But...We always do it together.", 1400, () => {
             // 4. Joao
             this._showEndingDialogue('joao', "Come here. (-3-)", 1400, () => {
               // 5. Bichilin
