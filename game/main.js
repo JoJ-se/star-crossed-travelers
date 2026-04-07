@@ -12,6 +12,7 @@ window.startGame = function () {
     antialiasGL: true,
     pixelArt: false,
     roundPixels: false,
+    resolution: window.devicePixelRatio || 1,
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,
