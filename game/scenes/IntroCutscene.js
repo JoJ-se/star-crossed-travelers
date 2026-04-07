@@ -243,27 +243,34 @@ class IntroCutscene extends Phaser.Scene {
     const W   = this.scale.width;
     const H   = this.scale.height;
     const dpr = window.devicePixelRatio || 1;
-    const isMobile = W < 600;
+    // Broad mobile detection — covers large phones and touch tablets
+    const isMobile = W < 768 || (window.navigator.maxTouchPoints > 0 && W < 1024);
 
     // ── Card area (right half on desktop, full width on mobile)
-    const cardX = isMobile ? 12 : Math.round(W * 0.48);
-    const cardW = isMobile ? W - 24 : W - cardX - 16;
-    const textX = cardX + 22;
-    const maxW  = cardW - 44;
+    const cardX = isMobile ? 10 : Math.round(W * 0.48);
+    const cardW = isMobile ? W - 20 : W - cardX - 16;
+    const textX = cardX + 20;
+    const maxW  = cardW - 40;
 
-    // ── Semi-transparent card behind the text only — cosmic scene shows through
-    const firstY = H * 0.20;
-    const lastY  = H * 0.69 + (isMobile ? 32 : 38);
-    const cardPad = 18;
+    // ── Semi-transparent card — slightly more opaque on mobile for contrast
+    const firstY  = H * 0.20;
+    const lastY   = H * 0.69 + (isMobile ? 36 : 38);
+    const cardPad = isMobile ? 20 : 18;
     const card = this.add.graphics().setDepth(18);
-    card.fillStyle(0x030712, 0.65);
+    card.fillStyle(0x030712, isMobile ? 0.78 : 0.65);
     card.fillRoundedRect(cardX, firstY - cardPad, cardW, lastY - firstY + cardPad * 2, 12);
 
-    // ── Font + shadow used for every text object
-    const FONT       = "'Palatino Linotype', Palatino, serif";
-    const bodySize   = isMobile ? '15px' : '18px';
-    const finalSize  = isMobile ? '19px' : '24px';
-    const textShadow = { offsetX: 0, offsetY: 0, color: 'rgba(252,211,77,0.30)', blur: 10, fill: true };
+    // ── Font config — mobile: larger + bold italic, no shadow (shadow blur causes mobile blur)
+    //                  desktop: italic, gold glow shadow
+    const FONT        = "'Palatino Linotype', Palatino, serif";
+    const bodySize    = isMobile ? '17px' : '18px';
+    const finalSize   = isMobile ? '22px' : '24px';
+    const bodyStyle   = isMobile ? 'bold italic' : 'italic';
+    const finalStyle  = isMobile ? 'bold' : 'italic';
+    // Shadow only on desktop — blur smears text on mobile high-DPI canvas
+    const textShadow  = isMobile
+      ? undefined
+      : { offsetX: 0, offsetY: 0, color: 'rgba(252,211,77,0.30)', blur: 10, fill: true };
 
     const lines = [
       { text: 'A cosmic storm tore through the galaxy without warning.',                                       y: H * 0.20 },
@@ -278,9 +285,9 @@ class IntroCutscene extends Phaser.Scene {
     const typeNextLine = (idx) => {
       if (idx >= lines.length) {
         const hint = this.add.text(textX, H * 0.82, 'tap / space to continue', {
-          fontSize: isMobile ? '12px' : '13px',
+          fontSize: isMobile ? '14px' : '13px',
           fontFamily: FONT,
-          fontStyle: 'italic',
+          fontStyle: isMobile ? 'bold italic' : 'italic',
           color: '#818cf8',
           letterSpacing: 1,
           resolution: dpr,
@@ -301,17 +308,18 @@ class IntroCutscene extends Phaser.Scene {
       }
 
       const { text, y, isFinal } = lines[idx];
-      const t = this.add.text(textX, y, '', {
+      const cfg = {
         fontSize:     isFinal ? finalSize : bodySize,
         fontFamily:   FONT,
-        fontStyle:    'italic',
+        fontStyle:    isFinal ? finalStyle : bodyStyle,
         color:        isFinal ? '#fcd34d' : '#ffffff',
-        shadow:       textShadow,
-        letterSpacing: isFinal ? 3 : 1,
+        letterSpacing: isFinal ? (isMobile ? 1 : 3) : 0,
         wordWrap:     { width: maxW },
-        lineSpacing:  6,
+        lineSpacing:  isMobile ? 8 : 6,
         resolution:   dpr,
-      }).setDepth(21).setAlpha(0);
+      };
+      if (textShadow) cfg.shadow = textShadow;
+      const t = this.add.text(textX, y, '', cfg).setDepth(21).setAlpha(0);
       textObjs.push(t);
 
       this.tweens.add({ targets: t, alpha: 1, duration: 300 });
