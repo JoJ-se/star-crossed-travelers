@@ -609,10 +609,10 @@ class Level1 extends Phaser.Scene {
 
     this._queueRocky(
       "Ship wreck survived! Nice one, space potato!",
-      6000
+      5000
     );
 
-    this.time.delayedCall(6500, () => {
+    this.time.delayedCall(5500, () => {
       this.cameras.main.fadeOut(800, 3, 7, 18);
       this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Level2'));
     });

@@ -805,7 +805,7 @@ class Level2 extends Phaser.Scene {
     this._levelComplete = true;
     this._queueRocky("Made it through! You know what she'd sign to you,right? Let me try - How was it..'We were just kids when we fell in love..I will not give you up this time' - yeah, that one. Go get her.", 8000);
 
-    this.time.delayedCall(8800, () => {
+    this.time.delayedCall(8300, () => {
       this.cameras.main.fadeOut(800, 3, 7, 18);
       this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Level3'));
     });
