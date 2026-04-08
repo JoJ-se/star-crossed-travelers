@@ -308,13 +308,14 @@ h1 span:nth-child(22) { animation-delay: 1.68s; }
 }
 
 @keyframes look-body-scan {
-  0%   { transform: rotate(-30deg) translateX(-4px); }
-  18%  { transform: rotate(-34deg) translateX(-6px) scale(1.02); }
-  42%  { transform: rotate(28deg) translateX(4px); }
-  58%  { transform: rotate(32deg) translateX(6px) scale(1.02); }
-  74%  { transform: rotate(-5deg) translateX(-1px); }
-  86%  { transform: rotate(-28deg) translateX(-4px); }
-  100% { transform: rotate(-30deg) translateX(-4px); }
+  0%   { transform: rotate(0deg) translateX(0); }
+  14%  { transform: rotate(-24deg) translateX(-3px); }
+  26%  { transform: rotate(-32deg) translateX(-5px) scale(1.02); }
+  52%  { transform: rotate(28deg) translateX(4px); }
+  64%  { transform: rotate(32deg) translateX(5px) scale(1.02); }
+  80%  { transform: rotate(-4deg) translateX(-1px); }
+  91%  { transform: rotate(-20deg) translateX(-3px); }
+  100% { transform: rotate(0deg) translateX(0); }
 }
 
 .astronaut-body.look-at-girl {
@@ -333,13 +334,14 @@ h1 span:nth-child(22) { animation-delay: 1.68s; }
 }
 
 @keyframes visor-scan {
-  0%   { left: 3px; width: 26px; }
-  18%  { left: 2px; width: 24px; }
-  42%  { left: 18px; width: 26px; }
-  58%  { left: 20px; width: 24px; }
-  74%  { left: 10px; width: 34px; }
-  86%  { left: 3px; width: 26px; }
-  100% { left: 3px; width: 26px; }
+  0%   { left: 10px; width: 34px; }
+  14%  { left: 4px; width: 26px; }
+  26%  { left: 2px; width: 24px; }
+  52%  { left: 18px; width: 26px; }
+  64%  { left: 20px; width: 24px; }
+  80%  { left: 10px; width: 34px; }
+  91%  { left: 4px; width: 26px; }
+  100% { left: 10px; width: 34px; }
 }
 
 /* ── João Bubble ── */

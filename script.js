@@ -41,6 +41,7 @@ let girlTriggered = false;
 let greetTimer = null;
 let triggerTimer = null;
 let hideTimer = null;
+let lookTransitionTimer = null;
 let girlTypeDelayTimer = null;
 let joaoLookAtGirlTimer = null;
 
@@ -54,7 +55,50 @@ function clearJoaoTimers() {
   clearTimeout(greetTimer);
   clearTimeout(triggerTimer);
   clearTimeout(hideTimer);
+  clearTimeout(lookTransitionTimer);
   clearInterval(joaoTypingTimer);
+  if (astronautBody) {
+    astronautBody.style.transition = '';
+    astronautBody.style.transform = '';
+    astronautBody.style.animation = '';
+  }
+}
+
+function smoothStartLooking(currentToken) {
+  if (!astronautBody) return;
+
+  // Capture the current animated rotation so we can freeze there without a jump
+  const matrix = new DOMMatrix(getComputedStyle(astronautBody).transform);
+  const angle = Math.round(Math.atan2(matrix.m21, matrix.m11) * (180 / Math.PI));
+
+  // Freeze at current position and stop the idle animation
+  astronautBody.style.transform = `rotate(${angle}deg)`;
+  astronautBody.style.animation = 'none';
+
+  // On the next frame, ease smoothly to 0deg (where look-body-scan begins)
+  requestAnimationFrame(() => {
+    if (currentToken !== typingToken) {
+      astronautBody.style.transform = '';
+      astronautBody.style.animation = '';
+      return;
+    }
+    astronautBody.style.transition = 'transform 0.45s ease-in-out';
+    astronautBody.style.transform = 'rotate(0deg)';
+
+    lookTransitionTimer = setTimeout(() => {
+      if (currentToken !== typingToken) {
+        astronautBody.style.transition = '';
+        astronautBody.style.transform = '';
+        astronautBody.style.animation = '';
+        return;
+      }
+      // Clear inline overrides — CSS class animation now takes over at 0deg
+      astronautBody.style.transition = '';
+      astronautBody.style.transform = '';
+      astronautBody.style.animation = '';
+      astronautBody.classList.add('looking');
+    }, 470);
+  });
 }
 
 function clearGirlTimers() {
@@ -162,7 +206,7 @@ if (currentToken !== typingToken) return;
 greetTimer = setTimeout(async () => {
   if (currentToken !== typingToken) return;
 
-  astronautBody.classList.add('looking');
+  smoothStartLooking(currentToken);
 
   await typeText(astroBubble, 'Where is my Bichilin?', 30, 'joao');
   if (currentToken !== typingToken) return;
