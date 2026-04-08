@@ -91,23 +91,156 @@ class IntroCutscene extends Phaser.Scene {
     g.fillStyle(0xffffff,0.5); g.fillEllipse(cx-5*s,cy-32*s,8*s,6*s);
   }
 
-  _drawShipPanel(g, cx, cy, w, h) {
+  // ── ENGINE / REAR HALF — drawn in local coords (0,0 = ship split center) ──
+  _drawShipLeftHull(g, S) {
+    // Main rear hull shadow
+    g.fillStyle(0x8b95a8, 1);
+    g.fillRoundedRect(-149*S, -34*S, 153*S, 72*S, 9*S);
+    // Main rear hull face
+    g.fillStyle(0xe8edf5, 1);
+    g.fillRoundedRect(-149*S, -38*S, 153*S, 76*S, 9*S);
+    // Metallic top sheen
+    g.fillStyle(0xf4f7fb, 0.50);
+    g.fillRoundedRect(-147*S, -36*S, 147*S, 20*S, 6*S);
+
+    // Upper engine nacelle
+    g.fillStyle(0x7c8ea0, 1);
+    g.fillRoundedRect(-153*S, -63*S, 126*S, 27*S, 7*S); // shadow
+    g.fillStyle(0xa0aec0, 1);
+    g.fillRoundedRect(-153*S, -64*S, 126*S, 27*S, 7*S);
+    g.fillStyle(0xbdc6d4, 0.60);
+    g.fillRoundedRect(-151*S, -62*S, 120*S, 10*S, 4*S); // top highlight
+
+    // Lower engine nacelle
+    g.fillStyle(0x7c8ea0, 1);
+    g.fillRoundedRect(-153*S, 38*S, 126*S, 27*S, 7*S); // shadow
+    g.fillStyle(0xa0aec0, 1);
+    g.fillRoundedRect(-153*S, 37*S, 126*S, 27*S, 7*S);
+    g.fillStyle(0xbdc6d4, 0.45);
+    g.fillRoundedRect(-151*S, 37*S, 120*S, 8*S, 3*S);
+
+    // Wing struts connecting hull to nacelles
+    g.fillStyle(0x6b7a8d, 1);
+    g.fillRoundedRect(-131*S, -38*S, 38*S, 26*S, 4*S); // upper strut
+    g.fillRoundedRect(-131*S, 12*S,  38*S, 26*S, 4*S); // lower strut
+
+    // Engine nozzle outer rings
     g.fillStyle(0x374151, 1);
-    g.fillRect(cx-w/2, cy-h/2, w, h);
-    g.fillStyle(0x4b5563, 1);
-    g.fillRect(cx-w/2+4, cy-h/2+4, w-8, 5);
-    g.fillStyle(0x1f2937, 1);
-    g.fillRect(cx-w/2, cy+h/2-6, w, 6);
-    g.lineStyle(2, 0x6b7280, 0.8);
-    g.strokeRect(cx-w/2, cy-h/2, w, h);
-    // Port windows
-    g.fillStyle(0x1e3a5f, 1);
-    g.fillCircle(cx-18, cy, 6); g.fillCircle(cx+18, cy, 6);
-    g.lineStyle(1.5, 0x93c5fd, 0.5);
-    g.strokeCircle(cx-18, cy, 6); g.strokeCircle(cx+18, cy, 6);
-    // Rivet line
-    g.fillStyle(0x6b7280, 0.7);
-    for (let i = 0; i < 5; i++) g.fillCircle(cx-w/2+10+i*(w/5), cy-h/2+8, 2.5);
+    g.fillEllipse(-148*S, -51*S, 24*S, 19*S);
+    g.fillEllipse(-148*S,  51*S, 24*S, 19*S);
+    // Nozzle inner dark cavities
+    g.fillStyle(0x080c12, 1);
+    g.fillEllipse(-149*S, -51*S, 13*S, 10*S);
+    g.fillEllipse(-149*S,  51*S, 13*S, 10*S);
+
+    // Panel lines (indigo)
+    g.lineStyle(1.5*S, 0x6366f1, 0.60);
+    g.lineBetween(-3*S, -38*S, -3*S, 38*S);       // split seam
+    g.lineBetween(-146*S, 0, -4*S, 0);              // horizontal center seam
+    g.lineBetween(-78*S, -38*S, -78*S, 38*S);      // panel line 1
+    g.lineBetween(-114*S, -38*S, -114*S, 38*S);    // panel line 2
+
+    // Gold + indigo trim stripes
+    g.fillStyle(0xfcd34d, 0.88);
+    g.fillRect(-144*S, 27*S, 141*S, 4*S);
+    g.fillStyle(0x6366f1, 0.50);
+    g.fillRect(-144*S, 23*S, 141*S, 3*S);
+
+    // Rear dark end plate
+    g.fillStyle(0x2d3748, 1);
+    g.fillRoundedRect(-149*S, -38*S, 11*S, 76*S, 3*S);
+    g.lineStyle(1*S, 0x818cf8, 0.32);
+    g.strokeRoundedRect(-149*S, -38*S, 11*S, 76*S, 3*S);
+  }
+
+  // ── ENGINE EXHAUST GLOW — drawn in same local coords as left hull ──────
+  _drawEngineGlow(g, S) {
+    // Upper exhaust trail (4 layers, outermost → core)
+    g.fillStyle(0xf59e0b, 0.09); g.fillEllipse(-180*S, -51*S, 65*S, 38*S);
+    g.fillStyle(0xfbbf24, 0.22); g.fillEllipse(-170*S, -51*S, 44*S, 26*S);
+    g.fillStyle(0xfde68a, 0.52); g.fillEllipse(-158*S, -51*S, 24*S, 15*S);
+    g.fillStyle(0xfef9c3, 0.88); g.fillEllipse(-151*S, -51*S, 13*S,  9*S);
+    // Lower exhaust trail
+    g.fillStyle(0xf59e0b, 0.09); g.fillEllipse(-180*S,  51*S, 65*S, 38*S);
+    g.fillStyle(0xfbbf24, 0.22); g.fillEllipse(-170*S,  51*S, 44*S, 26*S);
+    g.fillStyle(0xfde68a, 0.52); g.fillEllipse(-158*S,  51*S, 24*S, 15*S);
+    g.fillStyle(0xfef9c3, 0.88); g.fillEllipse(-151*S,  51*S, 13*S,  9*S);
+  }
+
+  // ── NOSE / FRONT HALF — drawn in local coords (0,0 = split center) ─────
+  _drawShipRightHull(g, S) {
+    // Main front hull shadow
+    g.fillStyle(0x8b95a8, 1);
+    g.fillRoundedRect(-3*S, -34*S, 124*S, 72*S, 9*S);
+    // Main front hull face
+    g.fillStyle(0xe8edf5, 1);
+    g.fillRoundedRect(-3*S, -38*S, 124*S, 76*S, 9*S);
+    // Metallic top sheen
+    g.fillStyle(0xf4f7fb, 0.50);
+    g.fillRoundedRect(-1*S, -36*S, 118*S, 20*S, 6*S);
+
+    // Nose cone (tapered triangle pointing right)
+    g.fillStyle(0xcdd5e0, 1);
+    g.fillTriangle(101*S, -38*S, 101*S, 38*S, 164*S, 0);
+    // Nose upper highlight (brighter upper surface)
+    g.fillStyle(0xe8edf5, 0.78);
+    g.fillTriangle(101*S, -38*S, 101*S, -7*S, 151*S, -20*S);
+
+    // Cockpit window outer frame
+    g.fillStyle(0x152742, 1);
+    g.fillRoundedRect(13*S, -29*S, 66*S, 38*S, 8*S);
+    // Cockpit glass
+    g.fillStyle(0x0d1e38, 1);
+    g.fillRoundedRect(16*S, -26*S, 60*S, 32*S, 6*S);
+    // Blue atmospheric glow
+    g.fillStyle(0x1d4ed8, 0.28);
+    g.fillRoundedRect(16*S, -26*S, 60*S, 32*S, 6*S);
+    // Main cockpit reflection
+    g.fillStyle(0x93c5fd, 0.58);
+    g.fillEllipse(33*S, -18*S, 28*S, 11*S);
+    // Small bright highlight
+    g.fillStyle(0xe0f2fe, 0.40);
+    g.fillEllipse(22*S, -22*S, 11*S,  5*S);
+
+    // Main antenna
+    g.lineStyle(2*S, 0xbdc6d4, 0.85);
+    g.lineBetween(90*S, -38*S, 90*S, -60*S);
+    g.fillStyle(0xfcd34d, 1); g.fillCircle(90*S, -62*S, 4*S);
+    // Secondary antenna
+    g.lineStyle(1.5*S, 0x818cf8, 0.75);
+    g.lineBetween(74*S, -38*S, 74*S, -54*S);
+    g.fillStyle(0x818cf8, 1); g.fillCircle(74*S, -56*S, 3*S);
+    // Tertiary short sensor
+    g.lineStyle(1*S, 0x9ca3af, 0.55);
+    g.lineBetween(56*S, -38*S, 56*S, -48*S);
+    g.fillCircle(56*S, -49*S, 2*S);
+
+    // Panel lines (indigo)
+    g.lineStyle(1.5*S, 0x6366f1, 0.60);
+    g.lineBetween(0, 0, 99*S, 0);              // horizontal center seam
+    g.lineBetween(68*S, -38*S, 68*S, 38*S);   // vertical panel break
+    g.lineBetween(4*S, -38*S, 4*S, 38*S);     // split edge seam
+
+    // Gold + indigo trim stripes
+    g.fillStyle(0xfcd34d, 0.88);
+    g.fillRect(2*S, 27*S, 97*S, 4*S);
+    g.fillStyle(0x6366f1, 0.50);
+    g.fillRect(2*S, 23*S, 97*S, 3*S);
+
+    // Docking port
+    g.fillStyle(0x374151, 1);    g.fillCircle(9*S, 10*S, 10*S);
+    g.fillStyle(0x4b5563, 0.7);  g.fillCircle(9*S, 10*S,  6*S);
+    g.lineStyle(1*S, 0x9ca3af, 0.45); g.strokeCircle(9*S, 10*S, 10*S);
+    // Docking port detail ring
+    g.fillStyle(0x6b7280, 0.38);
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2;
+      g.fillCircle(9*S + Math.cos(a)*7*S, 10*S + Math.sin(a)*7*S, 2*S);
+    }
+
+    // Rivet row along top edge
+    g.fillStyle(0x6b7280, 0.58);
+    for (let i = 0; i < 5; i++) g.fillCircle((8 + i * 18)*S, -32*S, 2.5*S);
   }
 
   _drawRocky(g, cx, cy, s) {
@@ -370,25 +503,38 @@ class IntroCutscene extends Phaser.Scene {
     planet.fillStyle(0xf59e0b, 0.09); planet.fillCircle(W * 0.82, H * 0.22, 160);
     planet.fillStyle(0xfbbf24, 0.05); planet.fillCircle(W * 0.82, H * 0.22, 90);
 
-    // ── Ship — two hull panels connected
-    this._shipLeft  = this.add.graphics().setDepth(7);
+    // ── Cinematic ship — scale responds to screen width ────────────────────
+    const shipX = Math.round(W / 2);
+    const shipY = Math.round(H / 2 - 10);
+    const S     = Math.max(0.52, Math.min(1.0, W / 820));
+    this._shipS = S;
+
+    // Engine glow (depth 6 — behind the hull so it shows through nozzles)
+    this._engineGlow = this.add.graphics().setDepth(6);
+    this._engineGlow.x = shipX;
+    this._engineGlow.y = shipY;
+    this._drawEngineGlow(this._engineGlow, S);
+
+    // Left half — engine / rear section (depth 7)
+    this._shipLeft = this.add.graphics().setDepth(7);
+    this._shipLeft.x = shipX;
+    this._shipLeft.y = shipY;
+    this._drawShipLeftHull(this._shipLeft, S);
+
+    // Right half — nose / cockpit section (depth 7)
     this._shipRight = this.add.graphics().setDepth(7);
-    this._bridge    = this.add.graphics().setDepth(8);
+    this._shipRight.x = shipX;
+    this._shipRight.y = shipY;
+    this._drawShipRightHull(this._shipRight, S);
 
-    this._drawShipPanel(this._shipLeft,  W/2 - 62, H/2 - 10, 100, 54);
-    this._drawShipPanel(this._shipRight, W/2 + 62, H/2 - 10, 100, 54);
+    // Bridge — invisible placeholder; destroyed at explosion to remove the seam
+    this._bridge = this.add.graphics().setDepth(8);
 
-    this._bridge.lineStyle(3, 0x6b7280, 1);
-    this._bridge.beginPath();
-    this._bridge.moveTo(W/2 - 12, H/2 - 10);
-    this._bridge.lineTo(W/2 + 12, H/2 - 10);
-    this._bridge.strokePath();
-    // Bridge support struts
-    this._bridge.lineStyle(1.5, 0x4b5563, 0.8);
-    this._bridge.beginPath();
-    this._bridge.moveTo(W/2 - 12, H/2 - 25);
-    this._bridge.lineTo(W/2 + 12, H/2 - 25);
-    this._bridge.strokePath();
+    // Engine glow pulses softly while ship drifts
+    this.tweens.add({
+      targets: this._engineGlow, alpha: 0.50, duration: 900,
+      yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+    });
 
     this.cameras.main.fadeIn(900, 3, 7, 18);
     this.time.delayedCall(1000, () => this._beat1());
@@ -398,15 +544,19 @@ class IntroCutscene extends Phaser.Scene {
   // BEAT 1 — Peaceful drift
   // ─────────────────────────────────────────────────────────────────────────
   _beat1() {
-    const all = [this._shipLeft, this._shipRight, this._bridge];
-    // Gentle drift + slow bob
+    const all     = [this._shipLeft, this._shipRight, this._engineGlow];
+    const allFull = [...all, this._bridge];
+    // Gentle rightward drift
+    this.tweens.add({ targets: allFull, x: '+=22', duration: 1800, ease: 'Sine.easeInOut' });
+    // Slow vertical bob — onComplete drives the sequence forward
     this.tweens.add({
-      targets: all, x: '+=22', duration: 1800, ease: 'Sine.easeInOut',
+      targets: allFull, y: '-=8', duration: 900, ease: 'Sine.easeInOut',
+      yoyo: true, onComplete: () => this._beat2(),
     });
+    // Subtle angle wobble — ship feels alive, engines running
     this.tweens.add({
-      targets: all, y: '-=8', duration: 900, ease: 'Sine.easeInOut',
-      yoyo: true,
-      onComplete: () => this._beat2(),
+      targets: all, angle: 1.8, duration: 1700,
+      yoyo: true, ease: 'Sine.easeInOut',
     });
   }
 
@@ -449,58 +599,66 @@ class IntroCutscene extends Phaser.Scene {
   // BEAT 3 — Ship splits, debris scatters
   // ─────────────────────────────────────────────────────────────────────────
   _beat3() {
-    const W = this.scale.width;
-    const H = this.scale.height;
+    const S  = this._shipS || 1.0;
+    // Ship center in world space after beat1 drift (x drifted +22, y returned)
+    const sx = this._shipLeft.x;
+    const sy = this._shipLeft.y;
+
+    // ── Explosion flash at the crack point ─────────────────────────────────
+    const boom = this.add.graphics().setDepth(20);
+    boom.fillStyle(0x7c3aed, 0.18); boom.fillCircle(sx, sy, 62*S);
+    boom.fillStyle(0xf59e0b, 0.52); boom.fillCircle(sx, sy, 40*S);
+    boom.fillStyle(0xffffff, 0.95); boom.fillCircle(sx, sy, 22*S);
+    this.tweens.add({ targets: boom, alpha: 0, duration: 420, onComplete: () => boom.destroy() });
 
     this._bridge.destroy();
 
-    // ── Hull panels fly apart dramatically
+    // ── Left half (engine) tumbles upper-left ──────────────────────────────
     this.tweens.add({
-      targets: this._shipLeft,
-      x: '-=180', y: '-=90', angle: -32, alpha: 0.55,
-      duration: 1100, ease: 'Sine.easeOut',
+      targets: [this._shipLeft, this._engineGlow],
+      x: '-=290', y: '-=135', angle: -54, alpha: 0.56,
+      duration: 1250, ease: 'Sine.easeOut',
     });
+    // ── Right half (nose) tumbles lower-right ──────────────────────────────
     this.tweens.add({
       targets: this._shipRight,
-      x: '+=140', y: '+=100', angle: 22, alpha: 0.55,
-      duration: 1100, ease: 'Sine.easeOut',
+      x: '+=230', y: '+=145', angle: 34, alpha: 0.56,
+      duration: 1250, ease: 'Sine.easeOut',
     });
 
-    // ── Small debris fragments shoot out
+    // ── Debris scatter — mix of hull fragments and hot spark debris ─────────
     const debrisData = [
-      { dx: -220, dy: -130, angle: -55, size: 16 },
-      { dx:  180, dy: -80,  angle:  40, size: 12 },
-      { dx: -90,  dy:  160, angle: -20, size: 10 },
-      { dx:  250, dy:  120, angle:  65, size: 14 },
-      { dx: -150, dy:  80,  angle: -80, size: 8  },
-      { dx:  60,  dy: -180, angle:  35, size: 9  },
-      { dx: -40,  dy:  200, angle: -15, size: 11 },
-      { dx:  120, dy: -140, angle:  50, size: 7  },
+      { dx: -235, dy: -148, angle: -62, size: 18, hot: false },
+      { dx:  198, dy:  -94, angle:  46, size: 14, hot: true  },
+      { dx: -108, dy:  174, angle: -24, size: 11, hot: false },
+      { dx:  272, dy:  132, angle:  74, size: 16, hot: false },
+      { dx: -168, dy:   90, angle: -85, size:  9, hot: true  },
+      { dx:   70, dy: -196, angle:  39, size: 10, hot: false },
+      { dx:  -52, dy:  218, angle: -19, size: 12, hot: false },
+      { dx:  138, dy: -152, angle:  54, size:  8, hot: true  },
+      { dx: -288, dy:   44, angle: -40, size:  7, hot: false },
+      { dx:  166, dy:  192, angle:  80, size:  6, hot: false },
     ];
 
-    debrisData.forEach(({ dx, dy, angle, size }) => {
+    debrisData.forEach(({ dx, dy, angle, size, hot }) => {
       const d = this.add.graphics().setDepth(4);
-      d.fillStyle(0x4b5563, 1);
-      d.fillRect(-size/2, -size/2, size, size);
-      d.fillStyle(0x92400e, 0.5);
-      d.fillCircle(size/4, size/4, size/4);
-      d.x = W / 2;
-      d.y = H / 2 - 10;
+      if (hot) {
+        d.fillStyle(0xf59e0b, 1); d.fillCircle(0, 0, size * 0.55);
+        d.fillStyle(0xfef3c7, 0.80); d.fillCircle(0, 0, size * 0.25);
+      } else {
+        d.fillStyle(0x4b5563, 1); d.fillRect(-size/2, -size/2, size, size);
+        d.fillStyle(0x92400e, 0.42); d.fillCircle(size/4, size/4, size / 3.5);
+      }
+      d.x = sx; d.y = sy;
       this.tweens.add({
-        targets: d,
-        x: `+=${dx}`, y: `+=${dy}`,
-        angle, alpha: 0,
-        duration: Phaser.Math.Between(800, 1400),
-        ease: 'Sine.easeOut',
+        targets: d, x: `+=${dx}`, y: `+=${dy}`, angle, alpha: 0,
+        duration: Phaser.Math.Between(720, 1450), ease: 'Sine.easeOut',
         onComplete: () => d.destroy(),
       });
     });
 
-    // Second shake for the impact
     this.time.delayedCall(200, () => this.cameras.main.shake(400, 0.012));
-
-    // ── After split settles, Joao floats in
-    this.time.delayedCall(1200, () => this._beat4());
+    this.time.delayedCall(1300, () => this._beat4());
   }
 
   // ─────────────────────────────────────────────────────────────────────────
