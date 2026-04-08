@@ -85,6 +85,53 @@ body {
   to   { opacity: 0.45; }
 }
 
+/* ── Background Planets & Nebula ── */
+.planet-1 {
+  position: absolute;
+  top: -90px;
+  left: -70px;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 38%, #4338ca 0%, #1e1b4b 55%, transparent 80%);
+  opacity: 0.25;
+  pointer-events: none;
+  filter: blur(3px);
+  animation: planet-breathe 9s ease-in-out infinite alternate;
+}
+
+.planet-2 {
+  position: absolute;
+  bottom: -110px;
+  right: -90px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fbbf24 0%, #92400e 55%, transparent 80%);
+  opacity: 0.22;
+  pointer-events: none;
+  filter: blur(4px);
+  animation: planet-breathe 13s ease-in-out 3s infinite alternate;
+}
+
+.nebula-corner {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.2), rgba(99, 102, 241, 0.12) 50%, transparent 80%);
+  pointer-events: none;
+  filter: blur(22px);
+  animation: planet-breathe 16s ease-in-out 5s infinite alternate;
+}
+
+@keyframes planet-breathe {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); }
+}
+
 /* ── Shooting Stars ── */
 .shooting-stars {
   position: absolute;
@@ -257,15 +304,17 @@ h1 span:nth-child(22) { animation-delay: 1.68s; }
 }
 
 .astronaut-body.looking {
-  animation: look-body-scan 1.6s ease-in-out infinite;
+  animation: look-body-scan 2.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
 }
 
 @keyframes look-body-scan {
-  0%   { transform: rotate(-22deg); }
-  25%  { transform: rotate(22deg); }
-  50%  { transform: rotate(0deg); }
-  75%  { transform: rotate(-18deg); }
-  100% { transform: rotate(-22deg); }
+  0%   { transform: rotate(-30deg) translateX(-4px); }
+  18%  { transform: rotate(-34deg) translateX(-6px) scale(1.02); }
+  42%  { transform: rotate(28deg) translateX(4px); }
+  58%  { transform: rotate(32deg) translateX(6px) scale(1.02); }
+  74%  { transform: rotate(-5deg) translateX(-1px); }
+  86%  { transform: rotate(-28deg) translateX(-4px); }
+  100% { transform: rotate(-30deg) translateX(-4px); }
 }
 
 .astronaut-body.look-at-girl {
@@ -280,15 +329,17 @@ h1 span:nth-child(22) { animation-delay: 1.68s; }
 
 .astronaut-body.looking .helmet::before,
 .astronaut-body.look-at-girl .helmet::before {
-  animation: visor-scan 1.6s ease-in-out infinite;
+  animation: visor-scan 2.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
 }
 
 @keyframes visor-scan {
-  0%   { left: 10px; width: 34px; }
-  25%  { left: 3px; width: 28px; }
-  50%  { left: 10px; width: 34px; }
-  75%  { left: 17px; width: 28px; }
-  100% { left: 10px; width: 34px; }
+  0%   { left: 3px; width: 26px; }
+  18%  { left: 2px; width: 24px; }
+  42%  { left: 18px; width: 26px; }
+  58%  { left: 20px; width: 24px; }
+  74%  { left: 10px; width: 34px; }
+  86%  { left: 3px; width: 26px; }
+  100% { left: 3px; width: 26px; }
 }
 
 /* ── João Bubble ── */
@@ -697,7 +748,12 @@ h1 span:nth-child(22) { animation-delay: 1.68s; }
   border: 2px solid #bdc6d4;
   border-radius: 6px;
   transform-origin: top center;
-  transform: rotate(15deg);
+  animation: g-arm-wave 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes g-arm-wave {
+  from { transform: rotate(5deg); }
+  to   { transform: rotate(-55deg); }
 }
 
 .g-arm-l::after {

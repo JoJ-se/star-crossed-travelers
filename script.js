@@ -170,7 +170,7 @@ greetTimer = setTimeout(async () => {
   triggerTimer = setTimeout(() => {
     if (currentToken !== typingToken) return;
     restartGirlAnimation();
-  }, 400);
+  }, 0);
 }, 500);
 }
 
