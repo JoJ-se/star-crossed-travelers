@@ -609,7 +609,7 @@ class CosmicTeaPlanet extends Phaser.Scene {
           "Let me tell you something, Zhong. In the ancient art of Chinese chess, the chariot moves straight across the board — no detours, no second-guessing. That is you today: clear of purpose, steady of path.",
           () => {
             this._showBBDialogue(
-              "Go now. The stars are aligned. And Zhong? Sister in law says ' You two should eat less ice-cream' You know, she has eyes everywhere..",
+              "Go now. The stars are aligned. And Zhong? Sister in law says 'You two should eat less ice-cream'. You know, she has eyes everywhere..",
               () => {
                 // Rocky reacts, then proceed to Level 4
                 this._queueRocky(
