@@ -1239,13 +1239,110 @@ class Level4 extends Phaser.Scene {
 
         this._showRockyCentered("And, humans.... what is a 'Mcdonalds'?", 2000, () => {
           this._showRockyCentered("Is it a kind of Space potato?", 2000, () => {
-            // Pause 2 seconds then return to landing page — game is replayable
-            this.time.delayedCall(2000, () => {
-              window.location.reload();
-            });
+            this._runClosingSequence(W, H);
           });
         });
       },
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CLOSING SEQUENCE — typed dedication → restart button
+  // ─────────────────────────────────────────────────────────────────────────
+  _runClosingSequence(W, H) {
+    const dpr      = window.devicePixelRatio || 1;
+    const isMobile = W < 768;
+    const DEPTH    = 65; // above blackout (55) and Rocky panel (60/61)
+
+    // Step 1 — 1 second silence on black screen
+    this.time.delayedCall(1000, () => {
+
+      // Step 2 — typed dedication line with white soft glow
+      const msg = "No matter the distance, you can still reach me.";
+
+      // Glow halo behind text (white, not yellow)
+      const halo = this.add.graphics().setScrollFactor(0).setDepth(DEPTH);
+      halo.fillStyle(0xffffff, 0.05);
+      halo.fillEllipse(W / 2, H / 2, W * 0.75, isMobile ? 80 : 100);
+
+      const closeText = this.add.text(W / 2, H / 2, '', {
+        fontSize:   isMobile ? '20px' : '26px',
+        fontFamily: "'Palatino Linotype', Palatino, serif",
+        fontStyle:  'bold',
+        color:      '#ffffff',
+        shadow:     { offsetX: 0, offsetY: 0, color: 'rgba(255,255,255,0.45)', blur: 14, fill: true },
+        wordWrap:   { width: W - (isMobile ? 48 : 120) },
+        align:      'center',
+        resolution: dpr,
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH).setAlpha(0);
+
+      this.tweens.add({ targets: closeText, alpha: 1, duration: 500 });
+
+      this._typeWords(closeText, msg, 85, () => {
+        // Step 3 — 2 second pause then restart button
+        this.time.delayedCall(2000, () => {
+          this._showRestartButton(W, H, dpr, isMobile, DEPTH + 2);
+        });
+      });
+    });
+  }
+
+  _showRestartButton(W, H, dpr, isMobile, depth) {
+    const btnW  = isMobile ? 230 : 270;
+    const btnH  = isMobile ? 48  : 56;
+    const btnX  = (W - btnW) / 2;
+    const btnY  = H / 2 + (isMobile ? 60 : 72);
+    const rad   = btnH / 2; // full pill shape
+
+    // Outer radiant glow — soft star-like aura, no fill (pure glow)
+    const outerGlow = this.add.graphics().setScrollFactor(0).setDepth(depth).setAlpha(0);
+    outerGlow.fillStyle(0xffffff, 0.04);
+    outerGlow.fillRoundedRect(btnX - 18, btnY - 18, btnW + 36, btnH + 36, rad + 18);
+    outerGlow.fillStyle(0xffffff, 0.07);
+    outerGlow.fillRoundedRect(btnX - 9,  btnY - 9,  btnW + 18, btnH + 18, rad + 9);
+
+    // Button pill — transparent body, white glowing border
+    const pill = this.add.graphics().setScrollFactor(0).setDepth(depth + 1).setAlpha(0);
+    pill.fillStyle(0x000000, 0.0);        // transparent interior
+    pill.fillRoundedRect(btnX, btnY, btnW, btnH, rad);
+    pill.lineStyle(1.5, 0xffffff, 0.90);
+    pill.strokeRoundedRect(btnX, btnY, btnW, btnH, rad);
+
+    // Button label
+    const label = this.add.text(W / 2, btnY + btnH / 2, 'Restart the journey', {
+      fontSize:   isMobile ? '16px' : '18px',
+      fontFamily: "'Palatino Linotype', Palatino, serif",
+      fontStyle:  'bold',
+      color:      '#ffffff',
+      shadow:     { offsetX: 0, offsetY: 0, color: 'rgba(255,255,255,0.5)', blur: 8, fill: true },
+      resolution: dpr,
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 2).setAlpha(0);
+
+    // Invisible hit zone — full pill area
+    const hit = this.add.rectangle(W / 2, btnY + btnH / 2, btnW, btnH)
+      .setScrollFactor(0).setDepth(depth + 3)
+      .setFillStyle(0x000000, 0.001)
+      .setInteractive({ useHandCursor: true });
+
+    // Fade everything in together
+    this.tweens.add({
+      targets: [outerGlow, pill, label], alpha: 1, duration: 700, ease: 'Sine.easeOut',
+    });
+
+    // Hover: glow intensifies
+    hit.on('pointerover', () => {
+      this.tweens.killTweensOf(outerGlow);
+      this.tweens.add({ targets: outerGlow, alpha: 1.8, duration: 200 });
+      this.tweens.add({ targets: label, alpha: 1.0, duration: 150 });
+    });
+    hit.on('pointerout', () => {
+      this.tweens.killTweensOf(outerGlow);
+      this.tweens.add({ targets: outerGlow, alpha: 1.0, duration: 300 });
+    });
+
+    // Click — reload to landing page
+    hit.on('pointerdown', () => {
+      window.location.reload();
     });
   }
 

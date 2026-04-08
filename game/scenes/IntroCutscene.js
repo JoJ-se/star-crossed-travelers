@@ -396,8 +396,8 @@ class IntroCutscene extends Phaser.Scene {
     // ── Font config — mobile: larger + bold italic, no shadow (shadow blur causes mobile blur)
     //                  desktop: italic, gold glow shadow
     const FONT        = "'Palatino Linotype', Palatino, serif";
-    const bodySize    = isMobile ? '17px' : '18px';
-    const finalSize   = isMobile ? '22px' : '24px';
+    const bodySize    = isMobile ? '20px' : '21px';
+    const finalSize   = isMobile ? '25px' : '28px';
     const bodyStyle   = isMobile ? 'bold italic' : 'italic';
     const finalStyle  = isMobile ? 'bold' : 'italic';
     // Shadow only on desktop — blur smears text on mobile high-DPI canvas
