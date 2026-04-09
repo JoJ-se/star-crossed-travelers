@@ -1203,11 +1203,11 @@ class Level4 extends Phaser.Scene {
                     "Four planets. A debris field, a nebula, an ancient Martian structure, a philosophical Chinese man, and an asteroid. All of that — for ice cream and a hug.",
                     3000
                   );
-                  this._queueRocky("...Humans are absolutely insane.", 2100);
-                  this._queueRocky("...I'd do it again though.", 300);
+                  this._queueRocky("...Humans are absolutely insane.", 3300);
+                  this._queueRocky("...I'd do it again though.", 1500);
                   this._queueRocky(
                     "It is always the best time - when we are together.",
-                    800,
+                    2000,
                     () => this._runCredits()
                   );
                 });
