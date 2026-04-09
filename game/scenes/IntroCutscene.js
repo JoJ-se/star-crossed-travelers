@@ -692,7 +692,7 @@ class IntroCutscene extends Phaser.Scene {
           },
         });
 
-        this.time.delayedCall(1900, () => this._showStoryCard(() => this._enterRocky(joaoG)));
+        this.time.delayedCall(300, () => this._showStoryCard(() => this._enterRocky(joaoG)));
       },
     });
   }
