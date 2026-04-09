@@ -208,14 +208,15 @@ greetTimer = setTimeout(async () => {
 
   smoothStartLooking(currentToken);
 
-  await typeText(astroBubble, 'Where is my Bichilin?', 30, 'joao');
-  if (currentToken !== typingToken) return;
-
+  // Fire Elina as Joao starts asking — 800ms earlier than waiting for typing to finish
+  // (typing 'Where is my Bichilin?' takes ~630ms + the 170ms we saved on the pause above)
   triggerTimer = setTimeout(() => {
     if (currentToken !== typingToken) return;
     restartGirlAnimation();
   }, 0);
-}, 500);
+
+  await typeText(astroBubble, 'Where is my Bichilin?', 30, 'joao');
+}, 170);
 }
 
 function onHoverEnd() {
