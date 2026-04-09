@@ -304,15 +304,15 @@ h1 span:nth-child(22) { animation-delay: 1.68s; }
 }
 
 .astronaut-body.looking {
-  animation: look-body-scan 8s ease-in-out infinite;
+  animation: look-body-scan 2.5s ease-in-out infinite;
 }
 
 @keyframes look-body-scan {
-  0%   { transform: rotate(0deg); }
-  15%  { transform: rotate(-9deg); }
-  55%  { transform: rotate(9deg); }
-  80%  { transform: rotate(0deg); }
-  100% { transform: rotate(0deg); }
+  0%   { transform: rotate(0deg) translateY(0); }
+  20%  { transform: rotate(-13deg) translateY(-5px); }
+  58%  { transform: rotate(13deg) translateY(5px); }
+  80%  { transform: rotate(0deg) translateY(0); }
+  100% { transform: rotate(0deg) translateY(0); }
 }
 
 .astronaut-body.look-at-girl {
@@ -327,13 +327,13 @@ h1 span:nth-child(22) { animation-delay: 1.68s; }
 
 .astronaut-body.looking .helmet::before,
 .astronaut-body.look-at-girl .helmet::before {
-  animation: visor-scan 8s ease-in-out infinite;
+  animation: visor-scan 2.5s ease-in-out infinite;
 }
 
 @keyframes visor-scan {
   0%   { left: 10px; width: 34px; }
-  15%  { left: 5px; width: 29px; }
-  55%  { left: 15px; width: 29px; }
+  20%  { left: 4px; width: 27px; }
+  58%  { left: 16px; width: 27px; }
   80%  { left: 10px; width: 34px; }
   100% { left: 10px; width: 34px; }
 }
