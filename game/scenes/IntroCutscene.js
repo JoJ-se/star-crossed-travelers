@@ -680,17 +680,19 @@ class IntroCutscene extends Phaser.Scene {
         // Distant Bichilin appears in background as Joao looks around
         this._showDistantBichilin();
 
-        // Spin left-right — looking for her
+        // Gentle float while story types
+        this.tweens.add({ targets: joaoG, y: '-=16', duration: 2200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+        // Spin left-right — looking for her (runs concurrently with story card)
         this.tweens.add({
           targets: joaoG, angle: 14, duration: 550, yoyo: true, repeat: 2,
           ease: 'Sine.easeInOut',
           onComplete: () => {
-            // Gentle float while story types
-            this.tweens.add({ targets: joaoG, y: '-=16', duration: 2200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
             this.tweens.add({ targets: joaoG, angle: 4, duration: 4000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-            this.time.delayedCall(400, () => this._showStoryCard(() => this._enterRocky(joaoG)));
           },
         });
+
+        this.time.delayedCall(1900, () => this._showStoryCard(() => this._enterRocky(joaoG)));
       },
     });
   }
