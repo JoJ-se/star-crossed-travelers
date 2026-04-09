@@ -206,17 +206,23 @@ if (currentToken !== typingToken) return;
 greetTimer = setTimeout(async () => {
   if (currentToken !== typingToken) return;
 
+  // Gently fade out the first bubble before the second message appears
+  astroBubble.classList.remove('visible');
+  await new Promise(resolve => setTimeout(resolve, 320));
+  if (currentToken !== typingToken) return;
+
   smoothStartLooking(currentToken);
 
-  // Fire Elina as Joao starts asking — 800ms earlier than waiting for typing to finish
-  // (typing 'Where is my Bichilin?' takes ~630ms + the 170ms we saved on the pause above)
+  // Fire Elina as Joao starts asking
   triggerTimer = setTimeout(() => {
     if (currentToken !== typingToken) return;
     restartGirlAnimation();
   }, 0);
 
+  // Fade bubble back in while typing starts
+  astroBubble.classList.add('visible');
   await typeText(astroBubble, 'Where is my Bichilin?', 30, 'joao');
-}, 1700);
+}, 680);
 }
 
 function onHoverEnd() {
