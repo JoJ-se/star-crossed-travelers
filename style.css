@@ -309,8 +309,8 @@ h1 span:nth-child(22) { animation-delay: 1.68s; }
 
 @keyframes look-body-scan {
   0%   { transform: rotate(0deg); }
-  15%  { transform: rotate(-7deg); }
-  55%  { transform: rotate(7deg); }
+  15%  { transform: rotate(-9deg); }
+  55%  { transform: rotate(9deg); }
   80%  { transform: rotate(0deg); }
   100% { transform: rotate(0deg); }
 }
@@ -332,8 +332,8 @@ h1 span:nth-child(22) { animation-delay: 1.68s; }
 
 @keyframes visor-scan {
   0%   { left: 10px; width: 34px; }
-  15%  { left: 6px; width: 30px; }
-  55%  { left: 14px; width: 30px; }
+  15%  { left: 5px; width: 29px; }
+  55%  { left: 15px; width: 29px; }
   80%  { left: 10px; width: 34px; }
   100% { left: 10px; width: 34px; }
 }

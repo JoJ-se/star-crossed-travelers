@@ -168,13 +168,6 @@ function restartGirlAnimation() {
   resetGirlBubble();
   clearGirlTimers();
 
-  joaoLookAtGirlTimer = setTimeout(() => {
-    if (!girlScene.classList.contains('visible')) return;
-
-    astronautBody.classList.remove('looking');
-    astronautBody.classList.add('look-at-girl');
-  }, 1500);
-
   girlTypeDelayTimer = setTimeout(() => {
     if (!girlScene.classList.contains('visible')) return;
 
