@@ -216,7 +216,7 @@ greetTimer = setTimeout(async () => {
   }, 0);
 
   await typeText(astroBubble, 'Where is my Bichilin?', 30, 'joao');
-}, 170);
+}, 770);
 }
 
 function onHoverEnd() {
