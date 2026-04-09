@@ -614,7 +614,7 @@ class CosmicTeaPlanet extends Phaser.Scene {
                 // Rocky reacts, then proceed to Level 4
                 this._queueRocky(
                   "This Big Brother speaks in riddles — but his heart is in the right place.",
-                  3300,
+                  1900,
                   () => {
                     this.time.delayedCall(600, () => {
                       this.cameras.main.fadeOut(900, 20, 5, 0);

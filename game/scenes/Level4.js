@@ -48,6 +48,7 @@ class Level4 extends Phaser.Scene {
     this._welcomeDone      = false;
     this._firstDeathDone   = false;
     this._firstCrackDone   = false;
+    this._slideQuipDone    = false;
     this._halfwayDone      = false;
 
     // Rocky queue
@@ -1202,11 +1203,11 @@ class Level4 extends Phaser.Scene {
                     "Four planets. A debris field, a nebula, an ancient Martian structure, a philosophical Chinese man, and an asteroid. All of that — for ice cream and a hug.",
                     3000
                   );
-                  this._queueRocky("...Humans are absolutely insane.", 3300);
-                  this._queueRocky("...I'd do it again though.", 1500);
+                  this._queueRocky("...Humans are absolutely insane.", 2100);
+                  this._queueRocky("...I'd do it again though.", 300);
                   this._queueRocky(
                     "It is always the best time - when we are together.",
-                    2000,
+                    800,
                     () => this._runCredits()
                   );
                 });
@@ -1481,9 +1482,6 @@ class Level4 extends Phaser.Scene {
 
     if (this._deathCount === 1 && !this._firstDeathDone) {
       this._firstDeathDone = true;
-      this.time.delayedCall(600, () => {
-        this._queueRocky("Every step's a slide - just like trying to get Elina to open up sometimes.", 4000);
-      });
     }
 
     this.time.delayedCall(700, () => {
@@ -1547,6 +1545,11 @@ class Level4 extends Phaser.Scene {
     }
 
     // ── Rocky position triggers
+    if (!this._slideQuipDone && joao.x > 1000) {
+      this._slideQuipDone = true;
+      this._queueRocky("Every step's a slide - just like trying to get Elina to open up sometimes.", 4000);
+    }
+
     if (!this._halfwayDone && joao.x > 1800) {
       this._halfwayDone = true;
       this._queueRocky("Cold enough to freeze time...reminds me of that winter in BJ when you didn't want to leave her side.", 4500);
