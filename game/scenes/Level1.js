@@ -612,7 +612,7 @@ class Level1 extends Phaser.Scene {
       5000
     );
 
-    this.time.delayedCall(3700, () => {
+    this.time.delayedCall(4700, () => {
       this.cameras.main.fadeOut(800, 3, 7, 18);
       this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Level2'));
     });
