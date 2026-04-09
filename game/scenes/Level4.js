@@ -1261,11 +1261,6 @@ class Level4 extends Phaser.Scene {
       // Step 2 — typed dedication line with white soft glow
       const msg = "No matter the distance, you can still reach me.";
 
-      // Glow halo behind text (white, not yellow)
-      const halo = this.add.graphics().setScrollFactor(0).setDepth(DEPTH);
-      halo.fillStyle(0xffffff, 0.05);
-      halo.fillEllipse(W / 2, H / 2, W * 0.75, isMobile ? 80 : 100);
-
       const closeText = this.add.text(W / 2, H / 2, '', {
         fontSize:   isMobile ? '20px' : '26px',
         fontFamily: "'Palatino Linotype', Palatino, serif",
