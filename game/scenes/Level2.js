@@ -97,72 +97,91 @@ class Level2 extends Phaser.Scene {
   _buildBackground() {
     const W = this.scale.width;
     const H = this.scale.height;
+    const rnd = new Phaser.Math.RandomDataGenerator(['the-nebula']);
+    const ADD = Phaser.BlendModes.ADD;
+    window.sctTextures(this);
 
-    // Deep indigo base
-    const bg = this.add.graphics().setScrollFactor(0).setDepth(-10);
-    bg.fillStyle(0x08061a, 1);
-    bg.fillRect(0, 0, W, H);
+    // Sky — deep violet that warms to magenta near the bottom
+    window.sctSky(this, 'l2-sky', [
+      [0.00, '#06041a'], [0.35, '#120a35'], [0.70, '#230c45'], [1.00, '#3a0f45'],
+    ], -10);
 
-    // Layer 1 — deep background blobs (scrollFactor 0.05)
-    const deep = this.add.graphics().setScrollFactor(0.05).setDepth(-9);
-    [
-      [300,  300, 320, 0x4c1d95, 0.13],
-      [900,  200, 270, 0x581c87, 0.11],
-      [1500, 350, 340, 0x3730a3, 0.12],
-      [2100, 220, 290, 0x4c1d95, 0.10],
-      [2700, 310, 310, 0x312e81, 0.13],
-      [3300, 210, 270, 0x581c87, 0.11],
-      [3800, 300, 290, 0x4c1d95, 0.12],
-    ].forEach(([x, y, r, col, a]) => {
-      deep.fillStyle(col, a);   deep.fillCircle(x, y, r);
-      deep.fillStyle(col, a * 0.55); deep.fillCircle(x + r * 0.4, y + r * 0.3, r * 0.65);
-    });
+    // Span a parallax layer needs to cover the whole level
+    const span = sf => W + (L2_W - W) * sf + 300;
+    const puff = (sf, depth, x, y, w, h, tint, alpha, blend = ADD, key = 'sct-puff') =>
+      this.add.image(x, y, key).setScrollFactor(sf, 0.25).setDepth(depth)
+        .setTint(tint).setAlpha(alpha).setDisplaySize(w, h).setBlendMode(blend);
 
-    // Light motes instead of stars
-    const motes = this.add.graphics().setScrollFactor(0.08).setDepth(-8);
-    const moteColors = [0xf9a8d4, 0xa78bfa, 0x93c5fd, 0xe0e7ff, 0xfcd34d];
-    for (let i = 0; i < 200; i++) {
-      const mx = Phaser.Math.Between(0, L2_W);
-      const my = Phaser.Math.Between(0, L2_H);
-      motes.fillStyle(moteColors[i % moteColors.length], Math.random() * 0.5 + 0.1);
-      motes.fillCircle(mx, my, Math.random() * 1.8 + 0.3);
+    // Distant stars, some with soft flares
+    const starColors = [0xffffff, 0xf9a8d4, 0x93c5fd, 0xe0e7ff, 0xfcd34d];
+    const stars = this.add.graphics().setScrollFactor(0.04, 0.2).setDepth(-9.6);
+    for (let i = 0; i < 260; i++) {
+      stars.fillStyle(starColors[i % 5], rnd.realInRange(0.15, 0.7));
+      stars.fillCircle(rnd.between(-100, span(0.04)), rnd.between(-50, H + 50), rnd.realInRange(0.3, 1.6));
     }
 
-    // Layer 2 — mid clouds, pinks / purples / blues (scrollFactor 0.12)
-    const mid = this.add.graphics().setScrollFactor(0.12).setDepth(-7);
-    [
-      [550,  400, 190, 0xdb2777, 0.09],
-      [550,  400, 130, 0xec4899, 0.07],
-      [1200, 270, 170, 0x7c3aed, 0.09],
-      [1200, 270, 115, 0x8b5cf6, 0.07],
-      [1900, 390, 200, 0x2563eb, 0.08],
-      [1900, 390, 135, 0x3b82f6, 0.06],
-      [2500, 250, 180, 0xdb2777, 0.09],
-      [2500, 250, 125, 0xec4899, 0.07],
-      [3100, 380, 170, 0x7c3aed, 0.08],
-      [3100, 380, 115, 0xa78bfa, 0.06],
-      [3700, 270, 190, 0x2563eb, 0.08],
-    ].forEach(([x, y, r, col, a]) => {
-      mid.fillStyle(col, a);
-      mid.fillCircle(x, y, r);
-    });
+    // Layer 1 — vast gas clouds (the nebula itself)
+    const big = [0x6d28d9, 0x3730a3, 0xbe185d, 0x1d4ed8, 0x7e22ce, 0xdb2777];
+    for (let x = -200, i = 0; x < span(0.04); x += rnd.between(380, 560), i++) {
+      const y = i % 2 ? rnd.between(H * 0.0, H * 0.35) : rnd.between(H * 0.6, H * 1.0);
+      puff(0.04, -9.4, x, y, rnd.between(800, 1150), rnd.between(500, 700), big[i % big.length], rnd.realInRange(0.38, 0.5))
+        .setAngle(rnd.between(-20, 20));
+    }
 
-    // Layer 3 — foreground wisps (scrollFactor 0.22)
-    const fore = this.add.graphics().setScrollFactor(0.22).setDepth(-6);
-    [
-      [420,  490, 90, 0xf9a8d4, 0.14],
-      [950,  380, 70, 0xa78bfa, 0.12],
-      [1580, 460, 80, 0x93c5fd, 0.13],
-      [2200, 360, 75, 0xf9a8d4, 0.11],
-      [2750, 470, 85, 0xa78bfa, 0.14],
-      [3350, 380, 70, 0x93c5fd, 0.12],
-      [3820, 460, 80, 0xf9a8d4, 0.13],
-    ].forEach(([x, y, r, col, a]) => {
-      fore.fillStyle(col, a);
-      fore.fillEllipse(x, y, r * 3.2, r);
-      fore.fillStyle(col, a * 0.6);
-      fore.fillEllipse(x + r * 1.1, y + 22, r * 2.1, r * 0.65);
-    });
+    // Dark dust lanes cutting through the glow — gives the clouds shape
+    for (let x = 0; x < span(0.06); x += rnd.between(380, 560)) {
+      puff(0.06, -9.2, x, rnd.between(H * 0.1, H * 0.9), rnd.between(650, 1000), rnd.between(160, 280),
+        0x030109, rnd.realInRange(0.75, 0.95), Phaser.BlendModes.NORMAL).setAngle(rnd.between(-25, 25));
+    }
+
+    // Bright stars embedded in the gas, twinkling
+    for (let i = 0; i < 22; i++) {
+      const f = puff(0.07, -9.0, rnd.between(0, span(0.07)), rnd.between(H * 0.05, H * 0.9),
+        1, 1, starColors[i % 5], 0.9, ADD, 'sct-flare');
+      const sz = rnd.between(16, 40); f.setDisplaySize(sz, sz);
+      this.tweens.add({ targets: f, alpha: 0.3, duration: rnd.between(900, 2400), yoyo: true, repeat: -1, delay: rnd.between(0, 2000) });
+      puff(0.07, -9.05, f.x, f.y, sz * 3, sz * 3, starColors[i % 5], 0.25, ADD, 'sct-glow');
+    }
+
+    // Layer 2 — luminous cores: pink, violet, cyan, breathing slowly
+    const mid = [0xec4899, 0xa855f7, 0x22d3ee, 0xf472b6, 0x8b5cf6, 0x60a5fa];
+    for (let x = 0, i = 0; x < span(0.12); x += rnd.between(300, 460), i++) {
+      const cx = x, cy = i % 2 ? rnd.between(H * 0.08, H * 0.4) : rnd.between(H * 0.6, H * 0.92);
+      const tint = mid[i % mid.length];
+      for (let k = 0; k < 3; k++) {
+        const p = puff(0.12, -8.6, cx + rnd.between(-120, 120), cy + rnd.between(-60, 60),
+          rnd.between(260, 440), rnd.between(160, 300), k === 2 ? mid[(i + 2) % mid.length] : tint,
+          rnd.realInRange(0.28, 0.42), ADD, k === 0 ? 'sct-glow' : 'sct-puff').setAngle(rnd.between(-30, 30));
+        this.tweens.add({ targets: p, alpha: p.alpha * 0.6, scaleX: p.scaleX * 1.08, scaleY: p.scaleY * 1.08,
+          duration: rnd.between(3000, 6000), yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: rnd.between(0, 3000) });
+      }
+    }
+
+    // Layer 3 — closer wisps, long and thin
+    const wisp = [0xf9a8d4, 0xc4b5fd, 0x93c5fd];
+    for (let x = 0, i = 0; x < span(0.25); x += rnd.between(200, 320), i++) {
+      puff(0.25, -7, x, rnd.between(H * 0.15, H * 0.95), rnd.between(380, 620), rnd.between(60, 110),
+        wisp[i % 3], rnd.realInRange(0.16, 0.26)).setAngle(rnd.between(-12, 12));
+    }
+
+    // Drifting light motes
+    this.add.particles(0, 0, 'sct-spark', {
+      x: { min: 0, max: W }, y: { min: 0, max: H },
+      lifespan: { min: 5000, max: 9000 },
+      speedX: { min: -12, max: 12 }, speedY: { min: -10, max: 6 },
+      scale: { min: 0.12, max: 0.5 },
+      alpha: { start: 0.8, end: 0 },
+      tint: [0xf9a8d4, 0xa78bfa, 0x93c5fd, 0xe0e7ff, 0xfcd34d],
+      frequency: 110, blendMode: 'ADD',
+    }).setScrollFactor(0).setDepth(-5);
+
+    // Foreground wisps drifting past in front of everything
+    for (let x = 300, i = 0; x < L2_W * 1.35 + 600; x += rnd.between(500, 800), i++) {
+      const p = this.add.image(x, rnd.between(80, L2_H - 60), 'sct-puff').setScrollFactor(1.35, 1).setDepth(20)
+        .setTint(wisp[i % 3]).setAlpha(rnd.realInRange(0.07, 0.11)).setBlendMode(ADD)
+        .setDisplaySize(rnd.between(420, 640), rnd.between(80, 140));
+      this.tweens.add({ targets: p, x: p.x + rnd.between(40, 90), duration: rnd.between(6000, 10000), yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
 
     // Cinematic vignette
     window.addVignette(this, 29, 1);
@@ -212,15 +231,40 @@ class Level2 extends Phaser.Scene {
   _drawNebulaPlatform(x, y, w, h, isHidden) {
     const a = isHidden ? 0 : 1;
     const g = this.add.graphics().setDepth(2).setAlpha(a);
+    const L = x - w / 2, T = y - h / 2;
 
-    g.fillStyle(L2_PAL.hull,   1); g.fillRect(x - w/2, y - h/2, w, h);
-    g.fillStyle(L2_PAL.hullHi, 1); g.fillRect(x - w/2 + 4, y - h/2 + 3, w - 8, 4);
-    g.fillStyle(0x1e1040,      1); g.fillRect(x - w/2, y + h/2 - 5, w, 5);
-    g.lineStyle(1.5, L2_PAL.purple, 0.65); g.strokeRect(x - w/2, y - h/2, w, h);
-    g.lineStyle(1,   L2_PAL.pink,   0.28); g.strokeRect(x - w/2 + 2, y - h/2 + 2, w - 4, h - 4);
-    // Energy shimmer along top edge
-    g.lineStyle(2, L2_PAL.violet, 0.65); g.lineBetween(x - w/2 + 4, y - h/2, x + w/2 - 4, y - h/2);
-    g.lineStyle(1, L2_PAL.blue,   0.40); g.lineBetween(x - w/2 + 4, y - h/2 + 2, x + w/2 - 4, y - h/2 + 2);
+    // Soft glow pooled beneath the platform
+    g.fillStyle(L2_PAL.purple, 0.10); g.fillEllipse(x, y + h * 0.9, w * 1.2, h * 2.6);
+    g.fillStyle(L2_PAL.pink,   0.08); g.fillEllipse(x, y + h * 0.7, w * 0.8, h * 1.6);
+
+    // Crystal shards hanging underneath
+    const n = Math.max(3, Math.round(w / 26));
+    for (let i = 0; i < n; i++) {
+      const sx = L + 8 + (i + 0.5) * ((w - 16) / n);
+      const len = 8 + ((i * 7 + Math.round(x)) % 5) * 4;
+      g.fillStyle(0x4c1d95, 0.95); g.fillTriangle(sx - 6, T + h - 1, sx + 6, T + h - 1, sx + 1, T + h + len);
+      g.fillStyle(0xc4b5fd, 0.35); g.fillTriangle(sx - 1, T + h - 1, sx + 5, T + h - 1, sx + 1, T + h + len);
+    }
+
+    // Body — layered violet crystal
+    g.fillStyle(0x24164f, 1); g.fillRoundedRect(L, T, w, h, 4);
+    g.fillStyle(0x3b2584, 1); g.fillRoundedRect(L + 2, T + 2, w - 4, h * 0.55, 3);
+    g.fillStyle(0x160c33, 1); g.fillRect(L + 3, T + h - 4, w - 6, 3);
+
+    // Facets
+    g.lineStyle(1, 0xa78bfa, 0.3);
+    for (let fx = L + 14; fx < L + w - 10; fx += 22) g.lineBetween(fx, T + 3, fx + 8, T + h - 3);
+
+    // Glowing top edge
+    g.lineStyle(4, L2_PAL.violet, 0.35); g.lineBetween(L + 3, T + 1, L + w - 3, T + 1);
+    g.lineStyle(1.5, 0xf5d0fe, 0.9);     g.lineBetween(L + 4, T + 1, L + w - 4, T + 1);
+    g.lineStyle(1, L2_PAL.pink, 0.45);   g.strokeRoundedRect(L, T, w, h, 4);
+
+    // Diamond end caps
+    [L, L + w].forEach(ex => {
+      g.fillStyle(0xe9d5ff, 0.85);
+      g.fillPoints([{ x: ex, y: y - 5 }, { x: ex + 4, y }, { x: ex, y: y + 5 }, { x: ex - 4, y }], true);
+    });
 
     const body = this.physics.add.staticImage(x, y, null).setVisible(false);
     body.setDisplaySize(w, h); body.refreshBody();
@@ -335,17 +379,26 @@ class Level2 extends Phaser.Scene {
       [2360, 320, 130, 280,  85],
       [3580, 310, 120, 260, -85],
     ].forEach(([cx, cy, w, h, pushX]) => {
-      // Shimmer visual
+      // Flowing current: a soft column of light with streaks racing through it
       const col = pushX > 0 ? 0x93c5fd : 0xf9a8d4;
-      const g = this.add.graphics().setDepth(1);
-      g.fillStyle(col, 0.06);
-      g.fillRect(cx - w/2, cy, w, h);
-      g.lineStyle(1, col, 0.18);
-      g.strokeRect(cx - w/2, cy, w, h);
-
-      // Arrow hints
       const dir = pushX > 0 ? 1 : -1;
-      g.lineStyle(1.5, col, 0.30);
+      const glow = this.add.image(cx, cy + h / 2, 'sct-puff').setDepth(1).setTint(col)
+        .setBlendMode(Phaser.BlendModes.ADD).setDisplaySize(w * 1.6, h * 1.15).setAlpha(0.35);
+      this.tweens.add({ targets: glow, alpha: 0.18, duration: 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+      this.add.particles(0, 0, 'sct-spark', {
+        x: { min: cx - dir * w / 2 - 4, max: cx - dir * w / 2 + 4 },
+        y: { min: cy + 10, max: cy + h - 10 },
+        speedX: { min: 150 * dir, max: 230 * dir }, speedY: { min: -8, max: 8 },
+        lifespan: { min: (w / 230) * 1000, max: (w / 150) * 1000 },
+        scaleX: { min: 1.2, max: 2.4 }, scaleY: { min: 0.12, max: 0.22 },
+        alpha: { start: 0.9, end: 0 }, tint: [col, 0xffffff],
+        frequency: 70, blendMode: 'ADD',
+      }).setDepth(1.5);
+
+      // Faint arrow hints (gameplay readability)
+      const g = this.add.graphics().setDepth(1);
+      g.lineStyle(1.5, col, 0.35);
       for (let ay = cy + 50; ay < cy + h - 50; ay += 60) {
         g.lineBetween(cx - dir * 12, ay, cx + dir * 14, ay);
         g.lineBetween(cx + dir * 14, ay, cx + dir * 6, ay - 7);

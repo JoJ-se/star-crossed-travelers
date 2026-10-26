@@ -25,6 +25,49 @@ window.addVignette = function (scene, depth, strength) {
     .setAlpha(strength == null ? 1 : strength);
 };
 
+// Shared soft-light textures (built once per game, reused by every scene).
+//   sct-glow  — radial white glow, bright core, smooth falloff (tint + ADD)
+//   sct-puff  — softer, flatter cloud puff for nebula gas
+//   sct-spark — tiny soft dot for drifting dust / sparks
+//   sct-flare — 4-point star flare
+window.sctTextures = function (scene) {
+  const T = scene.textures;
+  const radial = (key, size, stops) => {
+    if (T.exists(key)) return;
+    const t = T.createCanvas(key, size, size), c = t.getContext(), h = size / 2;
+    const g = c.createRadialGradient(h, h, 0, h, h, h);
+    stops.forEach(([o, a]) => g.addColorStop(o, `rgba(255,255,255,${a})`));
+    c.fillStyle = g; c.fillRect(0, 0, size, size); t.refresh();
+  };
+  radial('sct-glow',  256, [[0, 1], [0.15, 0.7], [0.4, 0.25], [0.7, 0.06], [1, 0]]);
+  radial('sct-puff',  256, [[0, 0.55], [0.35, 0.38], [0.65, 0.14], [0.85, 0.04], [1, 0]]);
+  radial('sct-spark', 32,  [[0, 1], [0.3, 0.6], [1, 0]]);
+  if (!T.exists('sct-flare')) {
+    const S = 128, t = T.createCanvas('sct-flare', S, S), c = t.getContext(), h = S / 2;
+    let g = c.createRadialGradient(h, h, 0, h, h, h * 0.35);
+    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = g; c.fillRect(0, 0, S, S);
+    [[S, 3], [3, S]].forEach(([w, hh]) => {
+      const lg = w > hh ? c.createLinearGradient(0, 0, S, 0) : c.createLinearGradient(0, 0, 0, S);
+      lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(0.5, 'rgba(255,255,255,0.9)'); lg.addColorStop(1, 'rgba(255,255,255,0)');
+      c.fillStyle = lg; c.fillRect(h - w / 2, h - hh / 2, w, hh);
+    });
+    t.refresh();
+  }
+};
+
+// Smooth vertical sky gradient, fixed to the screen. stops: [[offset, css colour], ...]
+window.sctSky = function (scene, key, stops, depth) {
+  if (!scene.textures.exists(key)) {
+    const t = scene.textures.createCanvas(key, 4, 512), c = t.getContext();
+    const g = c.createLinearGradient(0, 0, 0, 512);
+    stops.forEach(([o, col]) => g.addColorStop(o, col));
+    c.fillStyle = g; c.fillRect(0, 0, 4, 512); t.refresh();
+  }
+  const W = scene.scale.width, H = scene.scale.height;
+  return scene.add.image(W / 2, H / 2, key).setDisplaySize(W, H).setScrollFactor(0).setDepth(depth);
+};
+
 window.startGame = function () {
   const container = document.getElementById('game-container');
   container.style.display = 'block';

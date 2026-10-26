@@ -1543,7 +1543,7 @@ class Level4 extends Phaser.Scene {
 
     if (!this._halfwayDone && joao.x > 1800) {
       this._halfwayDone = true;
-      this._queueRocky("Cold enough to freeze time...reminds me of that winter in BJ when you didn't want to leave her side.", 4500);
+      this._queueRocky("Cold enough to freeze time...reminds me of that winter in Beijing when you didn't want to leave her side.", 4500);
     }
 
     // ── Geyser collision check
