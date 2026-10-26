@@ -102,110 +102,176 @@ class Level4 extends Phaser.Scene {
   _buildBackground() {
     const W = this.scale.width;
     const H = this.scale.height;
+    const ADD = Phaser.BlendModes.ADD;
+    const rnd = new Phaser.Math.RandomDataGenerator(['frozen-moon']);
+    window.sctTextures(this);
+    this._makeL4Textures();
 
-    // Deep navy-teal sky base
-    const bg = this.add.graphics().setScrollFactor(0).setDepth(-10);
-    bg.fillStyle(0x020b18, 1);
-    bg.fillRect(0, 0, W, H);
+    // Polar night sky
+    window.sctSky(this, 'l4-sky', [
+      [0.00, '#01030c'], [0.35, '#061230'], [0.70, '#0c2447'], [1.00, '#16365a'],
+    ], -10);
 
-    // Faint stars
-    const stars = this.add.graphics().setScrollFactor(0.06).setDepth(-9);
-    for (let i = 0; i < 160; i++) {
-      const sx = Phaser.Math.Between(0, L4_W);
-      const sy = Phaser.Math.Between(0, L4_H * 0.75);
-      stars.fillStyle(0xe0f2fe, Math.random() * 0.5 + 0.1);
-      stars.fillCircle(sx, sy, Math.random() * 1.4 + 0.2);
+    // Stars + a few bright twinkling ones
+    const span = sf => W + (L4_W - W) * sf + 200;
+    const stars = this.add.graphics().setScrollFactor(0.05, 0.2).setDepth(-9.8);
+    for (let i = 0; i < 300; i++) {
+      stars.fillStyle([0xffffff, 0xe0f2fe, 0xfbcfe8, 0xddd6fe][i % 4], rnd.realInRange(0.15, 0.85));
+      stars.fillCircle(rnd.between(-50, span(0.05)), rnd.between(-20, H * 0.75), rnd.realInRange(0.3, 1.6));
+    }
+    for (let i = 0; i < 14; i++) {
+      const sz = rnd.between(14, 32);
+      const f = this.add.image(rnd.between(0, span(0.05)), rnd.between(10, H * 0.5), 'sct-flare')
+        .setScrollFactor(0.05, 0.2).setDepth(-9.7).setBlendMode(ADD).setDisplaySize(sz, sz).setAlpha(0.85);
+      this.tweens.add({ targets: f, alpha: 0.2, duration: rnd.between(1000, 2600), yoyo: true, repeat: -1, delay: rnd.between(0, 2000) });
     }
 
-    // The Ice-Cream Planet — huge pale sphere looming in the background
-    const planet = this.add.graphics().setScrollFactor(0.04).setDepth(-8);
-    // Outer glow
-    planet.fillStyle(0xe0f2fe, 0.06); planet.fillCircle(2800, -200, 520);
-    planet.fillStyle(0xbae6fd, 0.08); planet.fillCircle(2800, -200, 440);
-    // Planet body
-    planet.fillStyle(0xf0f9ff, 0.18); planet.fillCircle(2800, -200, 360);
-    planet.fillStyle(0xe0f2fe, 0.14); planet.fillCircle(2800, -200, 300);
-    // Swirl marks
-    planet.fillStyle(0xfcd34d, 0.07); planet.fillEllipse(2720, -280, 260, 100);
-    planet.fillStyle(0xf9a8d4, 0.06); planet.fillEllipse(2850, -120, 200, 80);
-    planet.fillStyle(0xa78bfa, 0.05); planet.fillEllipse(2760, -200, 180, 60);
+    // The Ice-Cream Planet itself, hanging huge in the sky
+    const pd = Math.min(W, H) * 0.42;
+    const px = W * 0.74 + (L4_W - W) * 0.03 * 0.5;
+    this.add.image(px, H * 0.18, 'sct-glow').setScrollFactor(0.03, 0.15).setDepth(-9.5).setBlendMode(ADD)
+      .setTint(0xfbcfe8).setDisplaySize(pd * 1.9, pd * 1.9).setAlpha(0.3);
+    const planet = this.add.image(px, H * 0.18, 'l4-icplanet').setScrollFactor(0.03, 0.15).setDepth(-9.4).setDisplaySize(pd, pd);
+    this.tweens.add({ targets: planet, angle: 4, duration: 30000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
-    // Aurora curtains — Layer 2 (scrollFactor 0.12) — richer, more dramatic
-    const aurora = this.add.graphics().setScrollFactor(0.12).setDepth(-7);
-    const auroraData = [
-      [400,   0, 70,  420, 0x67e8f9, 0.13],
-      [700,   0, 90,  460, 0x34d399, 0.10],
-      [1100,  0, 65,  400, 0xa78bfa, 0.12],
-      [1500,  0, 80,  440, 0x67e8f9, 0.11],
-      [1900,  0, 75,  420, 0xf9a8d4, 0.10],
-      [2300,  0, 85,  460, 0x34d399, 0.12],
-      [2700,  0, 70,  400, 0xa78bfa, 0.11],
-      [3100,  0, 80,  440, 0x67e8f9, 0.13],
-    ];
-    auroraData.forEach(([x, y, w, h, col, a]) => {
-      aurora.fillStyle(col, a);
-      aurora.fillRect(x - w/2, y, w, h);
-      aurora.fillStyle(col, a * 0.55);
-      aurora.fillRect(x - w/2 + w*0.3, y, w * 0.4, h * 0.75);
-      // Inner bright core
-      aurora.fillStyle(col, a * 0.3);
-      aurora.fillRect(x - 8, y, 16, h * 0.6);
-    });
+    // Aurora curtains — soft ribbons that sway and breathe
+    this._auroraCurtains = [];
+    const auroraCols = [0x67e8f9, 0x34d399, 0xa78bfa, 0xf9a8d4, 0x22d3ee];
+    for (let x = -100, i = 0; x < span(0.1); x += rnd.between(90, 150), i++) {
+      const a = this.add.image(x, H * (0.42 + Math.sin(i * 0.9) * 0.06), 'l4-aurora').setOrigin(0.5, 1).setScrollFactor(0.1, 0.15)
+        .setDepth(-9.45).setBlendMode(ADD).setTint(auroraCols[Math.floor(i / 2) % auroraCols.length])
+        .setDisplaySize(rnd.between(220, 380), H * rnd.realInRange(0.4, 0.62)).setAlpha(rnd.realInRange(0.22, 0.38))
+        .setAngle(rnd.between(-12, 12));
+      this.tweens.add({ targets: a, x: x + rnd.between(-40, 40), scaleX: a.scaleX * rnd.realInRange(0.7, 1.3),
+        angle: a.angle + rnd.between(-6, 6), duration: rnd.between(4000, 8000), yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      this.tweens.add({ targets: a, alpha: a.alpha * 0.4, duration: rnd.between(1800, 3600), yoyo: true, repeat: -1,
+        ease: 'Sine.easeInOut', delay: rnd.between(0, 2000) });
+      this._auroraCurtains.push(a);
+    }
 
-    // Second aurora layer — offset colors for depth
-    const aurora2 = this.add.graphics().setScrollFactor(0.09).setDepth(-8);
-    [
-      [550,  0, 50, 340, 0xf9a8d4, 0.07],
-      [950,  0, 60, 380, 0x67e8f9, 0.06],
-      [1300, 0, 45, 320, 0x34d399, 0.07],
-      [1750, 0, 55, 360, 0xa78bfa, 0.06],
-      [2150, 0, 50, 340, 0xf9a8d4, 0.07],
-      [2550, 0, 60, 380, 0x67e8f9, 0.06],
-      [2950, 0, 50, 360, 0x34d399, 0.07],
-      [3350, 0, 55, 340, 0xa78bfa, 0.06],
-    ].forEach(([x, y, w, h, col, a]) => {
-      aurora2.fillStyle(col, a);
-      aurora2.fillRect(x - w/2, y, w, h);
-    });
+    // Distant hills shaped like scoops of ice cream, with frosting drips
+    const scoopCols = [[0x6b3a5c, 0xa86a90], [0x2f6157, 0x5a9e8a], [0x7a6844, 0xb09a6a], [0x4a4278, 0x7d72b0]];
+    const hills = this.add.graphics().setScrollFactor(0.2, 0.3).setDepth(-8.6);
+    const baseY = H * 0.9;
+    for (let x = -60, i = 0; x < span(0.2); x += rnd.between(110, 190), i++) {
+      const r = rnd.between(45, 85), [c0, c1] = scoopCols[i % 4], cy = baseY - r * 0.2;
+      hills.fillStyle(c0, 1); hills.fillCircle(x, cy, r);
+      hills.fillStyle(c1, 0.5); hills.fillEllipse(x - r * 0.28, cy - r * 0.45, r * 0.9, r * 0.5);   // moonlit top
+      hills.fillStyle(0xffffff, 0.35); hills.fillEllipse(x - r * 0.38, cy - r * 0.62, r * 0.35, r * 0.14);
+      hills.lineStyle(2, c1, 0.6);                                       // scoop ridges
+      hills.beginPath(); hills.arc(x, cy + r * 0.1, r * 0.8, Math.PI * 1.15, Math.PI * 1.85); hills.strokePath();
+      for (let k = -3; k <= 3; k++) {                                     // frosting drips over the edge
+        const dx = x + k * r * 0.26, dl = rnd.between(12, 40);
+        hills.fillStyle(c0, 1); hills.fillRoundedRect(dx - 8, cy + r * 0.45, 16, dl + r * 0.35, 8);
+        hills.fillStyle(c1, 0.5); hills.fillRoundedRect(dx - 5, cy + r * 0.45, 4, dl + r * 0.25, 2);
+      }
+    }
+    // Moonlit haze over the hills
+    this.add.image(W / 2, baseY - 20, 'sct-puff').setScrollFactor(0, 0.3).setDepth(-8.55).setBlendMode(ADD)
+      .setTint(0xbae6fd).setDisplaySize(W * 1.6, H * 0.26).setAlpha(0.42);
 
-    // Animate aurora layers with offset phases
-    this.tweens.add({ targets: aurora,  alpha: 0.42, duration: 2800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    this.tweens.add({ targets: aurora2, alpha: 0.30, duration: 3600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 1400 });
+    // Snowy ridge in the mid-ground with sparkle
+    const ridge = this.add.graphics().setScrollFactor(0.4, 0.6).setDepth(-8.3);
+    const rb = H * 0.93 + (L4_H - H) * 0.6;
+    const pts = [{ x: -100, y: rb + 300 }];
+    for (let x = -100; x <= span(0.4); x += 50) pts.push({ x, y: rb - 30 - Math.sin(x / 170) * 22 - Math.sin(x / 61) * 8 });
+    pts.push({ x: span(0.4), y: rb + 300 });
+    ridge.fillStyle(0x1e3a5f, 1); ridge.fillPoints(pts, true);
+    ridge.lineStyle(2, 0xe0f2fe, 0.5); ridge.strokePoints(pts.slice(1, -1));
 
-    // Crystal ice formations — Layer 3 (scrollFactor 0.22)
-    const crystals = this.add.graphics().setScrollFactor(0.22).setDepth(-6);
-    const crystalSpikes = [
-      [200,  L4_H - 80,  18, 110],
-      [350,  L4_H - 80,  14, 80],
-      [800,  L4_H - 80,  22, 140],
-      [950,  L4_H - 80,  16, 95],
-      [1400, L4_H - 80,  20, 120],
-      [1600, L4_H - 80,  15, 85],
-      [2000, L4_H - 80,  24, 150],
-      [2200, L4_H - 80,  18, 100],
-      [2600, L4_H - 80,  20, 125],
-      [2800, L4_H - 80,  14, 80],
-      [3100, L4_H - 80,  22, 135],
-      [3300, L4_H - 80,  16, 90],
-    ];
-    crystalSpikes.forEach(([x, y, w, h]) => {
-      crystals.fillStyle(0xbae6fd, 0.22);
-      crystals.fillTriangle(x, y - h, x - w, y, x + w, y);
-      crystals.fillStyle(0xe0f2fe, 0.12);
-      crystals.fillTriangle(x + 4, y - h * 0.7, x - 4, y - h * 0.2, x + w * 0.6, y);
-      crystals.lineStyle(1, 0x7dd3fc, 0.35);
-      crystals.strokeTriangle(x, y - h, x - w, y, x + w, y);
-    });
+    // Crystal ice formations — faceted, glowing from within
+    const crystals = this.add.graphics().setScrollFactor(0.55, 0.7).setDepth(-7.5);
+    const cb = L4_H - 30 + (H - L4_H) * 0.3;
+    for (let x = 120, i = 0; x < span(0.55); x += rnd.between(220, 380), i++) {
+      const tint = [0x67e8f9, 0xa78bfa, 0xf9a8d4][i % 3];
+      this.add.image(x, cb - 60, 'sct-glow').setScrollFactor(0.55, 0.7).setDepth(-7.6).setBlendMode(ADD)
+        .setTint(tint).setDisplaySize(220, 220).setAlpha(0.3);
+      const n = rnd.between(2, 4);
+      for (let k = 0; k < n; k++) {
+        const cx = x + (k - n / 2) * 22, h = rnd.between(60, 150), w = rnd.between(14, 24), lean = rnd.between(-14, 14);
+        crystals.fillStyle(0x1e4f7a, 0.95);
+        crystals.fillPoints([{ x: cx - w, y: cb }, { x: cx - w * 0.7 + lean, y: cb - h * 0.8 }, { x: cx + lean, y: cb - h },
+          { x: cx + w * 0.7 + lean, y: cb - h * 0.8 }, { x: cx + w, y: cb }], true);
+        crystals.fillStyle(0x7dd3fc, 0.55);
+        crystals.fillPoints([{ x: cx, y: cb }, { x: cx + lean, y: cb - h }, { x: cx + w * 0.7 + lean, y: cb - h * 0.8 }, { x: cx + w, y: cb }], true);
+        crystals.lineStyle(1.2, 0xe0f2fe, 0.7); crystals.lineBetween(cx + lean, cb - h, cx, cb);
+      }
+    }
 
-    // Icy ground strip
+    // Snowy ground with a soft glow on top
     const ground = this.add.graphics().setScrollFactor(1).setDepth(-5);
-    ground.fillStyle(0x0c4a6e, 0.55);
-    ground.fillRect(0, L4_H - 30, L4_W, 30);
-    ground.fillStyle(0x7dd3fc, 0.18);
-    ground.fillRect(0, L4_H - 30, L4_W, 6);
+    ground.fillStyle(0x0c2f4f, 1); ground.fillRect(0, L4_H - 30, L4_W, 200);
+    ground.fillStyle(0xbfe3fb, 0.55); ground.fillRect(0, L4_H - 30, L4_W, 4);
+    for (let x = 0; x < L4_W; x += 70) { ground.fillStyle(0xe0f2fe, 0.35); ground.fillEllipse(x + 35, L4_H - 28, 70, 10); }
+
+    // Gentle snowfall + glints
+    this.add.particles(0, 0, 'sct-spark', {
+      x: { min: -50, max: W + 50 }, y: -10,
+      lifespan: 9000, speedY: { min: 30, max: 70 }, speedX: { min: -20, max: 10 },
+      scale: { min: 0.12, max: 0.35 }, alpha: { start: 0.9, end: 0.1 },
+      tint: [0xffffff, 0xe0f2fe, 0xfbcfe8], frequency: 90,
+    }).setScrollFactor(0).setDepth(-4);
+    this.add.particles(0, 0, 'sct-flare', {
+      x: { min: 0, max: W }, y: { min: H * 0.5, max: H },
+      lifespan: 900, scale: { start: 0.25, end: 0 }, alpha: { start: 0.9, end: 0 },
+      tint: [0xe0f2fe, 0xfbcfe8], frequency: 400, blendMode: 'ADD',
+    }).setScrollFactor(0).setDepth(-3);
 
     // Cinematic vignette
     window.addVignette(this, 29, 1);
+  }
+
+  _makeL4Textures() {
+    const T = this.textures;
+    if (!T.exists('l4-aurora')) {
+      // Curtain: bright ragged lower edge fading upward, soft at the sides
+      const AW = 128, AH = 512, t = T.createCanvas('l4-aurora', AW, AH), c = t.getContext();
+      const vg = c.createLinearGradient(0, 0, 0, AH);
+      vg.addColorStop(0, 'rgba(255,255,255,0)'); vg.addColorStop(0.55, 'rgba(255,255,255,0.35)');
+      vg.addColorStop(0.9, 'rgba(255,255,255,0.95)'); vg.addColorStop(1, 'rgba(255,255,255,0)');
+      c.fillStyle = vg; c.fillRect(0, 0, AW, AH);
+      c.globalCompositeOperation = 'destination-in';
+      const hg = c.createLinearGradient(0, 0, AW, 0);
+      hg.addColorStop(0, 'rgba(0,0,0,0)'); hg.addColorStop(0.3, 'rgba(0,0,0,0.8)'); hg.addColorStop(0.5, 'rgba(0,0,0,1)');
+      hg.addColorStop(0.7, 'rgba(0,0,0,0.8)'); hg.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = hg; c.fillRect(0, 0, AW, AH);
+      c.globalCompositeOperation = 'source-over';
+      // Vertical rays
+      for (let x = 10; x < AW - 10; x += 9) { c.fillStyle = `rgba(255,255,255,${0.05 + (x % 3) * 0.04})`; c.fillRect(x, AH * 0.2, 2, AH * 0.75); }
+      t.refresh();
+    }
+    if (!T.exists('l4-icplanet')) {
+      // A pastel planet swirled like strawberry, mint and vanilla ice cream
+      const S = 512, t = T.createCanvas('l4-icplanet', S, S), c = t.getContext(), r = S * 0.46, cx = S / 2;
+      c.save(); c.beginPath(); c.arc(cx, cx, r, 0, Math.PI * 2); c.clip();
+      let g = c.createRadialGradient(cx - r * 0.35, cx - r * 0.4, r * 0.1, cx, cx, r * 1.05);
+      g.addColorStop(0, '#fff7fb'); g.addColorStop(0.5, '#fbcfe8'); g.addColorStop(1, '#a1527d');
+      c.fillStyle = g; c.fillRect(0, 0, S, S);
+      c.translate(cx, cx); c.rotate(-0.35);
+      [[-0.6, 0.09, 'rgba(167,243,208,0.65)'], [-0.35, 0.06, 'rgba(254,243,199,0.7)'], [-0.1, 0.1, 'rgba(244,114,182,0.45)'],
+       [0.15, 0.07, 'rgba(167,243,208,0.55)'], [0.38, 0.09, 'rgba(254,243,199,0.6)'], [0.62, 0.07, 'rgba(196,181,253,0.55)']]
+        .forEach(([fy, fh, col]) => {
+          c.fillStyle = col; c.beginPath();
+          for (let k = 0; k <= 40; k++) { const x = -r * 1.2 + k * r * 0.06; const y = fy * r + Math.sin(k * 0.7) * fh * r * 0.35; k ? c.lineTo(x, y) : c.moveTo(x, y); }
+          for (let k = 40; k >= 0; k--) { const x = -r * 1.2 + k * r * 0.06; const y = fy * r + fh * r + Math.sin(k * 0.7 + 1) * fh * r * 0.35; c.lineTo(x, y); }
+          c.fill();
+        });
+      // Sprinkles
+      const cols = ['#fcd34d', '#60a5fa', '#f87171', '#34d399', '#ffffff'];
+      for (let k = 0; k < 60; k++) {
+        const a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()) * r;
+        c.save(); c.translate(Math.cos(a) * d, Math.sin(a) * d); c.rotate(Math.random() * Math.PI);
+        c.fillStyle = cols[k % cols.length]; c.globalAlpha = 0.7; c.fillRect(-4, -1.2, 8, 2.4); c.restore();
+      }
+      c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1;
+      g = c.createLinearGradient(cx - r, cx - r, cx + r, cx + r);
+      g.addColorStop(0.5, 'rgba(10,10,40,0)'); g.addColorStop(1, 'rgba(10,10,40,0.7)');
+      c.fillStyle = g; c.fillRect(0, 0, S, S);
+      c.restore();
+      c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = 3;
+      c.beginPath(); c.arc(cx, cx, r - 1, Math.PI * 1.0, Math.PI * 1.6); c.stroke();
+      t.refresh();
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -252,35 +318,52 @@ class Level4 extends Phaser.Scene {
   _drawIcePlatform(x, y, w, h, isTransparent) {
     const g = this.add.graphics().setDepth(2);
     const a = isTransparent ? 0.5 : 1;
-
-    // Ice body
-    g.fillStyle(0x0e4166, a * 0.85);
-    g.fillRect(x - w/2, y - h/2, w, h);
-
-    // Ice shimmer top
-    g.fillStyle(0x7dd3fc, a * 0.45);
-    g.fillRect(x - w/2 + 3, y - h/2 + 2, w - 6, 5);
-
-    // Deeper blue bottom shadow
-    g.fillStyle(0x082f49, a * 0.9);
-    g.fillRect(x - w/2, y + h/2 - 5, w, 5);
-
-    // Ice edge glint
-    g.lineStyle(1.5, 0xbae6fd, a * 0.6);
-    g.strokeRect(x - w/2, y - h/2, w, h);
-    g.lineStyle(1, 0xe0f2fe, a * 0.3);
-    g.strokeRect(x - w/2 + 2, y - h/2 + 2, w - 4, h - 4);
-    // Visible crack lines in the ice surface
-    g.lineStyle(1, 0x7dd3fc, a * 0.55);
-    g.lineBetween(x - w*0.08, y - h/2, x + w*0.12, y + h/2);
-    g.lineStyle(0.8, 0x7dd3fc, a * 0.40);
-    g.lineBetween(x + w*0.18, y - h/2, x + w*0.05, y + h/2);
+    this._drawIceSlab(g, x, y, w, h, a, false, 0);
 
     const body = this.physics.add.staticImage(x, y, null).setVisible(false);
     body.setDisplaySize(w, h); body.refreshBody();
     this._platforms.add(body);
 
     return { g, body };
+  }
+
+  // Shared look for ice slabs: translucent body, inner light, snow cap and icicles
+  _drawIceSlab(g, x, y, w, h, a, cracking, crackLevel) {
+    const L = x - w / 2, T = y - h / 2;
+    const body = cracking ? 0x155e75 : 0x0e4166;
+    // Icicles hanging below
+    const n = Math.max(2, Math.round(w / 24));
+    for (let i = 0; i < n; i++) {
+      const ix = L + 8 + (i + 0.5) * ((w - 16) / n), len = 6 + ((i * 5 + Math.round(x)) % 4) * 4;
+      g.fillStyle(0xbae6fd, a * 0.75); g.fillTriangle(ix - 4, T + h - 1, ix + 4, T + h - 1, ix, T + h + len);
+      g.fillStyle(0xffffff, a * 0.5);  g.fillTriangle(ix - 1, T + h - 1, ix + 2, T + h - 1, ix, T + h + len * 0.7);
+    }
+    // Body
+    g.fillStyle(body, a * 0.9); g.fillRoundedRect(L, T, w, h, 4);
+    g.fillStyle(cracking ? 0x22d3ee : 0x38bdf8, a * 0.35); g.fillRoundedRect(L + 2, T + 4, w - 4, h * 0.5, 3);
+    g.fillStyle(0x082f49, a * 0.8); g.fillRect(L + 2, T + h - 4, w - 4, 3);
+    // Inner facets
+    g.lineStyle(1, 0xe0f2fe, a * 0.35);
+    for (let fx = L + 16; fx < L + w - 10; fx += 26) g.lineBetween(fx, T + 5, fx + 7, T + h - 3);
+    // Snow cap with soft lumps
+    g.fillStyle(0xf0f9ff, a); g.fillRoundedRect(L - 1, T - 3, w + 2, 7, 3.5);
+    for (let sx = L + 6; sx < L + w - 4; sx += 17) g.fillEllipse(sx, T - 2, 16, 7);
+    g.fillStyle(0xffffff, a * 0.9); g.fillRect(L + 4, T - 4, w * 0.35, 1.5);
+    // Edge glint
+    g.lineStyle(1, cracking ? 0x67e8f9 : 0xbae6fd, a * 0.7); g.strokeRoundedRect(L, T, w, h, 4);
+
+    if (cracking) {
+      const ca = crackLevel ? 0.95 : 0.45;
+      g.lineStyle(1.6, 0xffffff, ca);
+      g.lineBetween(x - 4, T + 2, x + 8, T + h - 2);
+      g.lineBetween(x + 2, T + 4, x - 12, T + h - 3);
+      g.lineBetween(x - 12, T + h - 3, x - 20, T + h * 0.4);
+      if (crackLevel) {
+        g.lineBetween(x - 14, T + 3, x - 6, y);
+        g.lineBetween(x + 14, T + 4, x + 4, y);
+        g.lineBetween(x + 8, T + h - 2, x + 22, T + 5);
+      }
+    }
   }
 
   _buildCrackPlatform(x, y, w, h) {
@@ -300,31 +383,7 @@ class Level4 extends Phaser.Scene {
 
   _drawCrackGfx(g, x, y, w, h, cracked) {
     g.clear();
-
-    // Ice body — slightly different tint to distinguish from solid
-    g.fillStyle(0x164e63, 0.80);
-    g.fillRect(x - w/2, y - h/2, w, h);
-
-    // Ice shimmer
-    g.fillStyle(0x67e8f9, 0.35);
-    g.fillRect(x - w/2 + 3, y - h/2 + 2, w - 6, 5);
-
-    g.fillStyle(0x0c4a6e, 0.85);
-    g.fillRect(x - w/2, y + h/2 - 5, w, 5);
-
-    g.lineStyle(1.5, 0x67e8f9, 0.65);
-    g.strokeRect(x - w/2, y - h/2, w, h);
-
-    // Crack marks — always visible, more dramatic when cracking
-    const crackA = cracked ? 0.95 : 0.35;
-    g.lineStyle(1.5, 0xe0f2fe, crackA);
-    // Center crack
-    g.lineBetween(x - 4, y - h/2 + 2, x + 8,  y + h/2 - 2);
-    g.lineBetween(x + 2, y - h/2 + 4, x - 12, y + h/2 - 3);
-    if (cracked) {
-      g.lineBetween(x - 14, y - h/2 + 3, x - 6, y);
-      g.lineBetween(x + 14, y - h/2 + 4, x + 4, y);
-    }
+    this._drawIceSlab(g, x, y, w, h, 1, true, cracked ? 1 : 0);
   }
 
   _crackAndSink(entry) {
@@ -547,11 +606,38 @@ class Level4 extends Phaser.Scene {
 
     // Glowing ice cream cone floating beside her
     this._buildIceCream(bx + 46, by - 28);
+    this._buildFinalLedge();
 
     // Trigger zone — when Joao gets within 120px, ending fires
     this._bingqilinTrigger = this.physics.add.staticImage(bx - 60, by, null).setVisible(false);
     this._bingqilinTrigger.setDisplaySize(140, 100);
     this._bingqilinTrigger.refreshBody();
+  }
+
+  // The crystalline ledge where she waits — glowing crystals and soft pink light
+  _buildFinalLedge() {
+    const ADD = Phaser.BlendModes.ADD;
+    const top = 330, x0 = 3370, x1 = 3630;
+    this.add.image(3480, top - 30, 'sct-glow').setDepth(1).setBlendMode(ADD).setTint(0xf9a8d4).setDisplaySize(520, 300).setAlpha(0.45);
+    this.add.image(3480, top + 10, 'sct-glow').setDepth(1).setBlendMode(ADD).setTint(0x67e8f9).setDisplaySize(420, 90).setAlpha(0.4);
+    const g = this.add.graphics().setDepth(1.5);
+    const cluster = (cx, sizes) => sizes.forEach(([dx, h, w, lean, col]) => {
+      const x = cx + dx;
+      g.fillStyle(col, 0.85);
+      g.fillPoints([{ x: x - w, y: top }, { x: x - w * 0.6 + lean, y: top - h * 0.8 }, { x: x + lean, y: top - h },
+        { x: x + w * 0.6 + lean, y: top - h * 0.8 }, { x: x + w, y: top }], true);
+      g.fillStyle(0xffffff, 0.35);
+      g.fillPoints([{ x, y: top }, { x: x + lean, y: top - h }, { x: x + w * 0.6 + lean, y: top - h * 0.8 }, { x: x + w, y: top }], true);
+      g.lineStyle(1.2, 0xffffff, 0.8); g.lineBetween(x + lean, top - h, x, top);
+    });
+    cluster(x1 - 20, [[-26, 70, 11, -10, 0xc4b5fd], [0, 120, 15, 4, 0xf9a8d4], [22, 85, 12, 12, 0x67e8f9], [40, 50, 9, 14, 0xc4b5fd]]);
+    cluster(x0 + 10, [[0, 36, 8, -6, 0x67e8f9], [14, 56, 10, 3, 0xf9a8d4]]);
+    // Sparkles drifting up from the crystals
+    this.add.particles(3600, top - 40, 'sct-flare', {
+      x: { min: -60, max: 40 }, y: { min: -60, max: 20 }, lifespan: 1400,
+      scale: { start: 0.22, end: 0 }, alpha: { start: 0.9, end: 0 }, speedY: { min: -20, max: -6 },
+      tint: [0xffffff, 0xf9a8d4, 0x67e8f9], frequency: 260, blendMode: 'ADD',
+    }).setDepth(2.5);
   }
 
   _drawBingqilinAstronaut(g, cx, cy, s) {
@@ -604,6 +690,9 @@ class Level4 extends Phaser.Scene {
       ease: 'Sine.easeInOut',
     });
     this._iceCreamG = g;
+    const glow = this.add.image(x, y - 10, 'sct-glow').setDepth(7.9).setBlendMode(Phaser.BlendModes.ADD)
+      .setTint(0xf9a8d4).setDisplaySize(110, 110).setAlpha(0.6);
+    this.tweens.add({ targets: glow, y: y - 20, alpha: 0.35, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -959,7 +1048,10 @@ class Level4 extends Phaser.Scene {
     this.time.delayedCall(1050, () => {
       // Camera stops following, pans to embrace + zooms in
       this.cameras.main.stopFollow();
+      this.cameras.main.setBounds(0, -400, L4_W + 900, L4_H + 400);   // let the camera centre on them
       this.cameras.main.pan(hugCX, hugCY, 1100, 'Sine.easeOut');
+      this._embraceBurst(hugCX, hugCY);
+      this._startShootingStars();
       this.cameras.main.zoomTo(1.22, 2600, 'Sine.easeInOut');
 
       // Sprites fade out, hug composite fades in
@@ -986,11 +1078,13 @@ class Level4 extends Phaser.Scene {
     const bx = cx + 14;  // Bingqilin body center x
 
     // ── Outer warm glow — radiates behind both figures
-    const gGlow = this.add.graphics().setDepth(11).setAlpha(0);
-    gGlow.fillStyle(0xfcd34d, 0.13); gGlow.fillCircle(cx, cy, 140);
-    gGlow.fillStyle(0xf9a8d4, 0.11); gGlow.fillCircle(cx, cy, 108);
-    gGlow.fillStyle(0xa78bfa, 0.09); gGlow.fillCircle(cx, cy,  78);
-    gGlow.fillStyle(0xffffff, 0.08); gGlow.fillCircle(cx, cy,  50);
+    const ADDg = Phaser.BlendModes.ADD;
+    const gGlow = this.add.container(cx, cy - 10).setDepth(11).setAlpha(0);
+    gGlow.add([
+      this.add.image(0, 0, 'sct-glow').setBlendMode(ADDg).setTint(0xa78bfa).setDisplaySize(420, 420).setAlpha(0.5),
+      this.add.image(0, 0, 'sct-glow').setBlendMode(ADDg).setTint(0xf9a8d4).setDisplaySize(300, 300).setAlpha(0.45),
+      this.add.image(0, 0, 'sct-glow').setBlendMode(ADDg).setTint(0xfcd34d).setDisplaySize(190, 190).setAlpha(0.35),
+    ]);
     this.tweens.add({ targets: gGlow, alpha: 1, duration: 700, ease: 'Sine.easeOut' });
     // Breathing pulse
     this.tweens.add({
@@ -1106,32 +1200,69 @@ class Level4 extends Phaser.Scene {
   _intensifyAurora() {
     const W = this.scale.width;
     const H = this.scale.height;
-    const overlay = this.add.graphics().setScrollFactor(0).setDepth(10).setAlpha(0);
+    const ADD = Phaser.BlendModes.ADD;
 
-    // Vertical curtain bands in palette colors
-    const bands = [
-      [0,        H * 0.50, W * 0.18, H * 0.50, 0x67e8f9, 0.30],
-      [W * 0.10, H * 0.35, W * 0.24, H * 0.65, 0xa78bfa, 0.24],
-      [W * 0.32, H * 0.30, W * 0.20, H * 0.70, 0x34d399, 0.22],
-      [W * 0.52, H * 0.38, W * 0.26, H * 0.62, 0xf9a8d4, 0.26],
-      [W * 0.76, H * 0.48, W * 0.24, H * 0.52, 0x67e8f9, 0.28],
-    ];
-    bands.forEach(([x, y, w, h, col, a]) => {
-      overlay.fillStyle(col, a);
-      overlay.fillRect(x, y, w, h);
-      overlay.fillStyle(col, a * 0.45);
-      overlay.fillRect(x + w * 0.28, y - H * 0.06, w * 0.44, h + H * 0.06);
+    // Existing curtains brighten
+    (this._auroraCurtains || []).forEach(a => {
+      this.tweens.killTweensOf(a);
+      this.tweens.add({ targets: a, alpha: Math.min(0.7, a.alpha * 2), duration: 1800, ease: 'Sine.easeOut' });
+      this.tweens.add({ targets: a, scaleX: a.scaleX * 1.25, angle: a.angle + Phaser.Math.Between(-8, 8),
+        duration: Phaser.Math.Between(3000, 5000), yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     });
-    // Warm gold bloom at center
-    overlay.fillStyle(0xfcd34d, 0.055); overlay.fillRect(W * 0.2, 0, W * 0.6, H);
-    overlay.fillStyle(0xf9a8d4, 0.040); overlay.fillRect(W * 0.3, 0, W * 0.4, H);
 
-    this.tweens.add({ targets: overlay, alpha: 1, duration: 1600, ease: 'Sine.easeOut' });
-    // Gentle shimmer
-    this.tweens.add({
-      targets: overlay,
-      alpha: { from: 0.82, to: 1.0 },
-      duration: 2400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+    // Plus a great ribbon of light sweeping across the screen
+    const cols = [0x67e8f9, 0x34d399, 0xa78bfa, 0xf9a8d4, 0x67e8f9, 0x34d399, 0xf9a8d4];
+    cols.forEach((col, i) => {
+      const x = (i + 0.5) * (W / cols.length);
+      const c = this.add.image(x, H * (0.62 + Math.sin(i * 1.3) * 0.08), 'l4-aurora').setOrigin(0.5, 1)
+        .setScrollFactor(0).setDepth(-9.42).setBlendMode(ADD).setTint(col).setAlpha(0)
+        .setDisplaySize(W / cols.length * 2.2, H * 0.48).setAngle(Phaser.Math.Between(-10, 10));
+      this.tweens.add({ targets: c, alpha: 0.32, duration: 1600 + i * 120, ease: 'Sine.easeOut' });
+      this.tweens.add({ targets: c, x: x + Phaser.Math.Between(-50, 50), angle: c.angle + Phaser.Math.Between(-8, 8),
+        duration: Phaser.Math.Between(3500, 6000), yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      this.tweens.add({ targets: c, alpha: 0.22, duration: Phaser.Math.Between(1800, 3000), yoyo: true, repeat: -1,
+        ease: 'Sine.easeInOut', delay: 1800 });
+    });
+  }
+
+  // ── A ring of light and sparkles when they finally embrace
+  _embraceBurst(cx, cy) {
+    const ADD = Phaser.BlendModes.ADD;
+    const ring = this.add.image(cx, cy - 10, 'sct-glow').setDepth(15).setBlendMode(ADD).setTint(0xffffff)
+      .setDisplaySize(60, 60).setAlpha(0.9);
+    this.tweens.add({ targets: ring, displayWidth: 700, displayHeight: 700, alpha: 0, duration: 1400, ease: 'Cubic.easeOut',
+      onComplete: () => ring.destroy() });
+    const ring2 = this.add.graphics().setDepth(15);
+    ring2.lineStyle(3, 0xfde68a, 0.9); ring2.strokeCircle(0, 0, 30);
+    ring2.x = cx; ring2.y = cy - 10;
+    this.tweens.add({ targets: ring2, scale: 7, alpha: 0, duration: 1600, ease: 'Cubic.easeOut', onComplete: () => ring2.destroy() });
+    const burst = this.add.particles(cx, cy - 10, 'sct-flare', {
+      speed: { min: 80, max: 260 }, lifespan: { min: 900, max: 1600 },
+      scale: { start: 0.35, end: 0 }, alpha: { start: 1, end: 0 },
+      tint: [0xfcd34d, 0xf9a8d4, 0x67e8f9, 0xffffff], blendMode: 'ADD', emitting: false,
+    }).setDepth(16);
+    burst.explode(40);
+    this.time.delayedCall(2000, () => burst.destroy());
+    // Soft ongoing sparkle around them
+    this.add.particles(cx, cy - 10, 'sct-spark', {
+      x: { min: -90, max: 90 }, y: { min: -80, max: 50 }, lifespan: 1600,
+      speedY: { min: -30, max: -10 }, scale: { start: 0.4, end: 0 }, alpha: { start: 0.9, end: 0 },
+      tint: [0xfcd34d, 0xf9a8d4, 0xffffff], frequency: 120, blendMode: 'ADD',
+    }).setDepth(16);
+  }
+
+  // ── Shooting stars streak across the sky during the ending
+  _startShootingStars() {
+    const W = this.scale.width, H = this.scale.height;
+    this.time.addEvent({
+      delay: 1400, loop: true, callback: () => {
+        const x0 = Phaser.Math.Between(W * 0.1, W * 0.9), y0 = Phaser.Math.Between(0, H * 0.3);
+        const len = Phaser.Math.Between(120, 220);
+        const st = this.add.image(x0, y0, 'sct-spark').setScrollFactor(0).setDepth(9.5).setBlendMode(Phaser.BlendModes.ADD)
+          .setDisplaySize(len, 3).setAngle(28).setAlpha(0);
+        this.tweens.add({ targets: st, x: x0 + 260, y: y0 + 140, alpha: { from: 1, to: 0 }, duration: 900,
+          ease: 'Sine.easeIn', onComplete: () => st.destroy() });
+      },
     });
   }
 
@@ -1150,7 +1281,12 @@ class Level4 extends Phaser.Scene {
         // Graphics origin at particle position so scale tweens work correctly
         const p = this.add.graphics({ x: px, y: py }).setDepth(16).setAlpha(0);
 
-        if (i % 3 === 0) {
+        if (i % 3 === 1) {
+          // Little heart
+          p.fillStyle(0xf9a8d4, 0.95);
+          p.fillCircle(-3, -2, 3.6); p.fillCircle(3, -2, 3.6);
+          p.fillTriangle(-6.4, -0.6, 6.4, -0.6, 0, 7);
+        } else if (i % 3 === 0) {
           // Cross / star
           p.fillStyle(col, 0.9);
           p.fillRect(-1, -5, 2, 10);

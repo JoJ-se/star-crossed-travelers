@@ -102,102 +102,211 @@ class Level3 extends Phaser.Scene {
   _buildBackground() {
     const W = this.scale.width;
     const H = this.scale.height;
+    const rnd = new Phaser.Math.RandomDataGenerator(['mars']);
+    const ADD = Phaser.BlendModes.ADD;
+    window.sctTextures(this);
 
-    // Sky gradient base — deep amber-red
-    const sky = this.add.graphics().setScrollFactor(0).setDepth(-10);
-    // Simulate gradient with stacked rects
-    const skyBands = [
-      [0x1a0a00, 1.0],
-      [0x2d1200, 0.9],
-      [0x3d1a00, 0.7],
-      [0x5c2800, 0.5],
-      [0x7c3a00, 0.3],
-    ];
-    skyBands.forEach(([col, a], i) => {
-      sky.fillStyle(col, a);
-      sky.fillRect(0, i * (H / skyBands.length), W, H / skyBands.length + 2);
-    });
-
-    // Distant mesa silhouettes — layer 1 (scrollFactor 0.04)
-    const mesas = this.add.graphics().setScrollFactor(0.04).setDepth(-9);
-    mesas.fillStyle(0x1c0a00, 1);
-    // Wide mesa shapes drawn as polygons across the full world height
-    [
-      [0,    L3_H - 600,  200, 220],
-      [180,  L3_H - 480,  280, 200],
-      [500,  L3_H - 700,  220, 250],
-      [750,  L3_H - 550,  300, 230],
-      [1050, L3_H - 620,  240, 210],
-      [1250, L3_H - 490,  200, 200],
-    ].forEach(([x, y, w, h]) => {
-      // Flat-top mesa trapezoid
-      mesas.fillTriangle(x, y + h, x + w * 0.15, y, x + w, y + h);
-      mesas.fillRect(x + w * 0.15, y, w * 0.7, h);
-      mesas.fillTriangle(x + w * 0.85, y, x + w, y + h, x + w * 0.15, y);
-    });
-
-    // Mid-distance rock formations — layer 2 (scrollFactor 0.10)
-    const rocks = this.add.graphics().setScrollFactor(0.10).setDepth(-8);
-    rocks.fillStyle(0x3d1800, 0.8);
-    [
-      [50,   L3_H - 350, 80,  120],
-      [300,  L3_H - 280, 60,   90],
-      [600,  L3_H - 400, 100, 150],
-      [900,  L3_H - 320, 75,  110],
-      [1150, L3_H - 370, 90,  130],
-    ].forEach(([x, y, w, h]) => {
-      rocks.fillRect(x, y, w, h);
-      rocks.fillTriangle(x + w * 0.5, y - h * 0.3, x, y, x + w, y);
-    });
-
-    // Two Martian moons — layer 1 (scrollFactor 0.04)
-    const moons = this.add.graphics().setScrollFactor(0.04).setDepth(-8);
-    moons.fillStyle(0xfde68a, 0.22); moons.fillCircle(200, 300, 55);
-    moons.fillStyle(0xfbbf24, 0.12); moons.fillCircle(200, 300, 45);
-    moons.fillStyle(0xdc6d00, 0.18); moons.fillCircle(1100, 180, 38);
-    moons.fillStyle(0xf59e0b, 0.10); moons.fillCircle(1100, 180, 30);
-
-    // Ancient structure background columns — layer 3 (scrollFactor 0.18)
-    // These run the full height of the world to give the sense of being inside a giant structure
-    const cols = this.add.graphics().setScrollFactor(0.18).setDepth(-7);
-    // Two flanking background columns
-    [120, 1280].forEach(cx => {
-      cols.fillStyle(0x292524, 0.9);
-      cols.fillRect(cx - 30, 100, 60, L3_H - 200);
-      cols.fillStyle(0x44403c, 0.5);
-      cols.fillRect(cx - 18, 100, 12, L3_H - 200);
-      // Carved glyphs along the column — geometric diamond shapes
-      for (let gy = 300; gy < L3_H - 300; gy += 280) {
-        cols.fillStyle(L3_PAL.glyph, 0.25);
-        cols.fillTriangle(cx, gy - 18, cx - 12, gy, cx, gy + 18);
-        cols.fillTriangle(cx, gy - 18, cx + 12, gy, cx, gy + 18);
-      }
-    });
-
-    // Vertical energy lines along the structure walls (scrollFactor 0.18)
-    const energyLines = this.add.graphics().setScrollFactor(0.18).setDepth(-6);
-    [200, 1200].forEach(ex => {
-      energyLines.lineStyle(2, L3_PAL.amber, 0.2);
-      energyLines.lineBetween(ex, 80, ex, L3_H - 100);
-      energyLines.lineStyle(1, L3_PAL.gold, 0.12);
-      energyLines.lineBetween(ex + 10, 80, ex + 10, L3_H - 100);
-    });
-
-    // Ambient dust motes drifting upward — more atmospheric
-    this._dustGraphics = this.add.graphics().setScrollFactor(0.06).setDepth(-5);
-    this._dustPositions = [];
-    for (let i = 0; i < 90; i++) {
-      const dx = Phaser.Math.Between(80, L3_W - 80);
-      const dy = Phaser.Math.Between(0, L3_H);
-      const ds = Math.random() * 2.2 + 0.4;
-      const da = Math.random() * 0.40 + 0.08;
-      const spd = Math.random() * 0.35 + 0.08;
-      this._dustPositions.push({ x: dx, y: dy, s: ds, a: da, spd });
+    // ── Tall sky: warm dusty haze at the base, deepening to crimson and then
+    //    starry space near the summit — you climb out of the atmosphere.
+    const SKY_SF = 0.12;
+    const skyH = H + (L3_H - H) * SKY_SF;
+    if (!this.textures.exists('l3-sky')) {
+      const t = this.textures.createCanvas('l3-sky', 4, 1024), c = t.getContext();
+      const g = c.createLinearGradient(0, 0, 0, 1024);
+      g.addColorStop(0.00, '#05030d'); g.addColorStop(0.22, '#140716');
+      g.addColorStop(0.45, '#3a0e12'); g.addColorStop(0.68, '#6e2410');
+      g.addColorStop(0.86, '#a4461a'); g.addColorStop(1.00, '#d9813a');
+      c.fillStyle = g; c.fillRect(0, 0, 4, 1024); t.refresh();
     }
-    this._redrawDust();
+    this.add.image(W / 2, 0, 'l3-sky').setOrigin(0.5, 0).setDisplaySize(W + 40, skyH)
+      .setScrollFactor(0, SKY_SF).setDepth(-10);
+
+    // Stars — only in the upper (thin-atmosphere) part of the sky
+    const stars = this.add.graphics().setScrollFactor(0.05, SKY_SF).setDepth(-9.8);
+    for (let i = 0; i < 320; i++) {
+      const y = rnd.realInRange(0, skyH * 0.55);
+      const fade = 1 - y / (skyH * 0.55);
+      stars.fillStyle([0xffffff, 0xfde68a, 0xfecaca, 0xc7d2fe][i % 4], rnd.realInRange(0.2, 0.9) * fade);
+      stars.fillCircle(rnd.between(-40, W + 120), y, rnd.realInRange(0.3, 1.7));
+    }
+    for (let i = 0; i < 10; i++) {
+      const y = rnd.realInRange(0, skyH * 0.3), sz = rnd.between(14, 30);
+      const f = this.add.image(rnd.between(0, W), y, 'sct-flare').setScrollFactor(0.05, SKY_SF).setDepth(-9.7)
+        .setBlendMode(ADD).setDisplaySize(sz, sz).setAlpha(0.8);
+      this.tweens.add({ targets: f, alpha: 0.25, duration: rnd.between(1000, 2400), yoyo: true, repeat: -1, delay: rnd.between(0, 1500) });
+    }
+
+    // Phobos and Deimos — small cratered moons
+    if (!this.textures.exists('l3-moon')) {
+      const S = 256, t = this.textures.createCanvas('l3-moon', S, S), c = t.getContext(), r = S * 0.42, cx = S / 2;
+      c.save(); c.beginPath(); c.arc(cx, cx, r, 0, Math.PI * 2); c.clip();
+      let g = c.createRadialGradient(cx - r * 0.4, cx - r * 0.4, r * 0.1, cx, cx, r * 1.1);
+      g.addColorStop(0, '#f5e6d3'); g.addColorStop(0.5, '#b8977a'); g.addColorStop(1, '#3d2a20');
+      c.fillStyle = g; c.fillRect(0, 0, S, S);
+      [[0.3, -0.2, 0.16], [-0.25, 0.3, 0.12], [-0.1, -0.45, 0.08], [0.45, 0.35, 0.1], [0.05, 0.1, 0.06]].forEach(([dx, dy, rr]) => {
+        c.fillStyle = 'rgba(60,40,30,0.35)'; c.beginPath(); c.arc(cx + dx * r, cx + dy * r, rr * r, 0, Math.PI * 2); c.fill();
+        c.fillStyle = 'rgba(255,240,220,0.18)'; c.beginPath(); c.arc(cx + dx * r - rr * r * 0.25, cx + dy * r - rr * r * 0.25, rr * r * 0.7, 0, Math.PI * 2); c.fill();
+      });
+      g = c.createLinearGradient(cx - r, cx - r, cx + r, cx + r);
+      g.addColorStop(0.45, 'rgba(10,5,10,0)'); g.addColorStop(1, 'rgba(10,5,10,0.85)');
+      c.fillStyle = g; c.fillRect(0, 0, S, S); c.restore(); t.refresh();
+    }
+    [[0.18, 0.30, 70, 0xfde68a], [0.82, 0.16, 40, 0xfca5a5]].forEach(([fx, fy, sz, glow]) => {
+      const x = W * fx, y = skyH * fy;
+      this.add.image(x, y, 'sct-glow').setScrollFactor(0.04, SKY_SF).setDepth(-9.6).setBlendMode(ADD)
+        .setTint(glow).setDisplaySize(sz * 3.2, sz * 3.2).setAlpha(0.35);
+      this.add.image(x, y, 'l3-moon').setScrollFactor(0.04, SKY_SF).setDepth(-9.5).setDisplaySize(sz, sz);
+    });
+
+    // Martian sunset — the sun sits low with Mars' famous blue halo
+    const sunY = skyH - H * 0.32;
+    this.add.image(W * 0.62, sunY, 'sct-glow').setScrollFactor(0.04, SKY_SF).setDepth(-9.4).setBlendMode(ADD)
+      .setTint(0x60a5fa).setDisplaySize(H * 1.1, H * 0.8).setAlpha(0.45);
+    this.add.image(W * 0.62, sunY, 'sct-glow').setScrollFactor(0.04, SKY_SF).setDepth(-9.3).setBlendMode(ADD)
+      .setTint(0xe0f2fe).setDisplaySize(90, 90).setAlpha(0.95);
+
+    // ── Distant landscape — jagged ridges, only seen near the bottom of the climb
+    const ridge = (sf, yFrac, amp, step, col, alpha, depth, haze) => {
+      const g = this.add.graphics().setScrollFactor(sf * 0.3, sf).setDepth(depth);
+      const base = H * yFrac + (L3_H - H) * sf;   // where the ridge sits when the camera is at the bottom
+      const pts = [{ x: -100, y: base + 600 }];
+      let y = base;
+      for (let x = -100; x <= W + 300; x += step) {
+        y = Phaser.Math.Clamp(y + rnd.between(-amp, amp), base - amp * 2.5, base + amp);
+        if (rnd.frac() < 0.15) { pts.push({ x, y: y - amp * 1.6 }); pts.push({ x: x + step * 0.6, y: y - amp * 1.6 }); }
+        else pts.push({ x, y });
+      }
+      pts.push({ x: W + 300, y: base + 600 });
+      g.fillStyle(col, alpha); g.fillPoints(pts, true);
+      if (haze) {
+        this.add.image(W / 2, base - 10, 'sct-puff').setScrollFactor(0, sf).setDepth(depth + 0.05)
+          .setTint(haze).setBlendMode(ADD).setDisplaySize(W * 1.6, amp * 7).setAlpha(0.35);
+      }
+    };
+    ridge(0.30, 0.66, 18, 60, 0x7a3418, 1, -9.0, 0xf59e0b);
+    ridge(0.45, 0.74, 24, 50, 0x4d1d0c, 1, -8.8, 0xea580c);
+    ridge(0.62, 0.84, 30, 44, 0x2a0e06, 1, -8.6, 0xb45309);
+
+    // ── The ancient structure you are climbing — a colossal carved monolith
+    this._buildMonolith(W, H, rnd);
+
+    // Blowing dust haze clouds drifting sideways
+    for (let i = 0; i < 9; i++) {
+      const p = this.add.image(rnd.between(-200, W + 200), rnd.between(0, L3_H), 'sct-puff').setScrollFactor(0.5, 0.5)
+        .setDepth(-6).setTint([0xf59e0b, 0xea580c, 0xfcd34d][i % 3]).setBlendMode(ADD)
+        .setDisplaySize(rnd.between(500, 900), rnd.between(120, 220)).setAlpha(0.12);
+      this.tweens.add({ targets: p, x: p.x + rnd.between(200, 400), duration: rnd.between(14000, 22000), yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+
+    // Rising dust motes and sparks
+    this.add.particles(0, 0, 'sct-spark', {
+      x: { min: 0, max: W }, y: { min: 0, max: H },
+      lifespan: { min: 4000, max: 8000 },
+      speedX: { min: 6, max: 26 }, speedY: { min: -22, max: -4 },
+      scale: { min: 0.1, max: 0.4 }, alpha: { start: 0.7, end: 0 },
+      tint: [0xfcd34d, 0xf59e0b, 0xfb923c, 0xfde68a],
+      frequency: 110, blendMode: 'ADD',
+    }).setScrollFactor(0).setDepth(-4);
+
+    // The old dust system is replaced by the particles above
+    this._dustGraphics  = null;
+    this._dustPositions = [];
 
     // Cinematic vignette
     window.addVignette(this, 29, 1);
+  }
+
+  _buildMonolith(W, H, rnd) {
+    const SF = 0.82;
+    const top = L3_H - 3960;                       // the summit sits just above the exit
+    const bottom = L3_H + 200;
+    const cx = L3_W / 2;
+    const halfBase = 420, halfTop = 220;
+    const g = this.add.graphics().setScrollFactor(SF, SF).setDepth(-7);
+    // Position the monolith so it lines up with the world at the camera's typical offset
+    const off = (y) => y * SF + (1 - SF) * (H / 2);   // keeps it aligned vertically as you climb
+    const offX = (x) => x * SF + (1 - SF) * (W / 2);
+    const yT = off(top), yB = off(bottom);
+    const halfAt = (y) => halfTop + (halfBase - halfTop) * ((y - yT) / (yB - yT));
+    const X = offX(cx);
+
+    // Main body with a stepped silhouette
+    g.fillStyle(0x452617, 1);
+    g.fillPoints([{ x: X - halfTop, y: yT }, { x: X + halfTop, y: yT }, { x: X + halfBase, y: yB }, { x: X - halfBase, y: yB }], true);
+    // Sun-lit right face
+    g.fillStyle(0x6b3a20, 1);
+    g.fillPoints([{ x: X + halfTop * 0.55, y: yT }, { x: X + halfTop, y: yT }, { x: X + halfBase, y: yB }, { x: X + halfBase * 0.55, y: yB }], true);
+    // Shadowed left face
+    g.fillStyle(0x26130b, 1);
+    g.fillPoints([{ x: X - halfTop, y: yT }, { x: X - halfTop * 0.6, y: yT }, { x: X - halfBase * 0.6, y: yB }, { x: X - halfBase, y: yB }], true);
+
+    // Carved block courses
+    for (let y = yT + 40; y < yB; y += 46) {
+      const hw = halfAt(y);
+      g.lineStyle(1.5, 0x0d0604, 0.7); g.lineBetween(X - hw, y, X + hw, y);
+      const off2 = (Math.floor((y - yT) / 46) % 2) * 40;
+      g.lineStyle(1, 0x0d0604, 0.5);
+      for (let x = X - hw + off2; x < X + hw; x += 80) g.lineBetween(x, y, x, y + 46);
+    }
+    // Sun-lit edge on the right face
+    g.lineStyle(3, 0xf59e0b, 0.45);
+    g.lineBetween(X + halfTop, yT, X + halfBase, yB);
+
+    // Arched niches with glowing glyphs — alternating sides as you climb
+    const ADDm = Phaser.BlendModes.ADD;
+    for (let y = yT + 300, i = 0; y < yB - 200; y += 300, i++) {
+      const hw = halfAt(y);
+      const nx = X + (i % 2 ? 0.45 : -0.45) * hw, nw = 64, nh = 120;
+      g.fillStyle(0x120804, 1);
+      g.fillRect(nx - nw / 2, y - nh / 2 + nw / 2, nw, nh - nw / 2);
+      g.slice(nx, y - nh / 2 + nw / 2, nw / 2, Math.PI, 0, false); g.fillPath();
+      g.lineStyle(3, 0x7a4424, 1);
+      g.strokeRect(nx - nw / 2, y - nh / 2 + nw / 2, nw, nh - nw / 2);
+      g.beginPath(); g.arc(nx, y - nh / 2 + nw / 2, nw / 2, Math.PI, 0, false); g.strokePath();
+      this.add.image(nx, y + 6, 'sct-glow').setScrollFactor(SF, SF).setDepth(-6.95).setBlendMode(ADDm)
+        .setTint(0xf59e0b).setDisplaySize(150, 190).setAlpha(0.5);
+      const sym = this.add.graphics().setScrollFactor(SF, SF).setDepth(-6.9);
+      sym.lineStyle(2.5, 0xfde68a, 0.95);
+      sym.strokeCircle(nx, y + 4, 12);
+      sym.lineBetween(nx, y - 22, nx, y + 34);
+      sym.lineBetween(nx - 16, y + 4, nx + 16, y + 4);
+      this.tweens.add({ targets: sym, alpha: 0.35, duration: 1600 + i * 120, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+
+    // Warm sunlight washing over the right face, deep shade on the left
+    for (let y = yT; y < yB; y += 600) {
+      this.add.image(X + halfAt(y) * 0.7, y + 300, 'sct-glow').setScrollFactor(SF, SF).setDepth(-6.98)
+        .setBlendMode(ADDm).setTint(0xea580c).setDisplaySize(500, 900).setAlpha(0.22);
+    }
+
+    // Capstone / summit spire
+    g.fillStyle(0x3d2114, 1);
+    g.fillTriangle(X - halfTop, yT, X + halfTop, yT, X, yT - 260);
+    g.fillStyle(0x7a4424, 1);
+    g.fillTriangle(X, yT - 260, X + halfTop, yT, X + halfTop * 0.4, yT);
+
+    // Glowing glyph channels — the structure is still alive
+    const glyphs = this.add.graphics().setScrollFactor(SF, SF).setDepth(-6.9);
+    const chans = [-0.75, -0.35, 0.35, 0.75];
+    chans.forEach((f, i) => {
+      for (let y = yT + 80; y < yB - 60; y += 46 * 3) {
+        const hw = halfAt(y), x = X + f * hw;
+        glyphs.lineStyle(2, 0xfbbf24, 0.55);
+        glyphs.lineBetween(x, y, x, y + 46 * 2);
+        if (((y / 46) | 0) % 3 === i % 3) {
+          glyphs.fillStyle(0xfcd34d, 0.75);
+          glyphs.fillPoints([{ x, y: y + 30 }, { x: x + 9, y: y + 46 }, { x, y: y + 62 }, { x: x - 9, y: y + 46 }], true);
+        }
+      }
+    });
+    // Big central eye glyph near the summit
+    glyphs.lineStyle(3, 0xfcd34d, 0.8); glyphs.strokeEllipse(X, yT + 120, 120, 50);
+    glyphs.fillStyle(0xfbbf24, 0.85); glyphs.fillCircle(X, yT + 120, 14);
+    this.tweens.add({ targets: glyphs, alpha: 0.45, duration: 2200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+    // Soft amber glow around the summit
+    this.add.image(X, yT - 60, 'sct-glow').setScrollFactor(SF, SF).setDepth(-7.1)
+      .setBlendMode(Phaser.BlendModes.ADD).setTint(0xf59e0b).setDisplaySize(900, 700).setAlpha(0.35);
   }
 
   _redrawDust() {
@@ -297,38 +406,37 @@ class Level3 extends Phaser.Scene {
 
   _drawStonePlatform(x, y, w, h) {
     const g = this.add.graphics().setDepth(2);
+    const L = x - w / 2, T = y - h / 2;
 
-    // Stone base
-    g.fillStyle(L3_PAL.stone, 1);
-    g.fillRect(x - w/2, y - h/2, w, h);
+    // Rough-cut ends
+    g.fillStyle(0x3a2a20, 1);
+    g.fillTriangle(L, T + 3, L - 6, T + h * 0.55, L, T + h);
+    g.fillTriangle(L + w, T + 3, L + w + 6, T + h * 0.5, L + w, T + h);
 
-    // Highlight top edge
-    g.fillStyle(L3_PAL.stoneHi, 1);
-    g.fillRect(x - w/2 + 3, y - h/2 + 2, w - 6, 4);
+    // Sandstone block
+    g.fillStyle(0x5a3f2c, 1); g.fillRect(L, T, w, h);
+    g.fillStyle(0x7a563a, 1); g.fillRect(L, T, w, h * 0.45);
+    g.fillStyle(0xd6a066, 1); g.fillRect(L, T, w, 2);              // sun-lit top lip
+    g.fillStyle(0x2a1a10, 1); g.fillRect(L, T + h - 4, w, 4);       // shadowed base
 
-    // Shadow bottom edge
-    g.fillStyle(0x1c1917, 1);
-    g.fillRect(x - w/2, y + h/2 - 5, w, 5);
+    // Block joints
+    g.lineStyle(1, 0x2a1a10, 0.8);
+    for (let jx = L + 46; jx < L + w - 10; jx += 46) g.lineBetween(jx, T + 2, jx, T + h - 4);
 
-    // Gold energy trim
-    g.lineStyle(1.5, L3_PAL.amber, 0.55);
-    g.strokeRect(x - w/2, y - h/2, w, h);
+    // Weathering speckles
+    g.fillStyle(0x2a1a10, 0.35);
+    for (let i = 0; i < w / 12; i++) g.fillCircle(L + 6 + ((i * 37 + x) % (w - 12)), T + 4 + ((i * 13) % (h - 8)), 1);
 
-    // Horizontal carved grooves
-    g.lineStyle(0.8, L3_PAL.amber, 0.20);
-    g.lineBetween(x - w/2 + 6, y, x + w/2 - 6, y);
-    // Small glyph marks on wider platforms
+    // Inset glowing glyph strip
+    g.lineStyle(1.5, L3_PAL.gold, 0.55); g.lineBetween(L + 10, y + 2, L + w - 10, y + 2);
     if (w >= 160) {
-      g.fillStyle(L3_PAL.glyph, 0.35);
       const marks = Math.floor(w / 80);
       for (let m = 0; m < marks; m++) {
-        const mx = x - w/2 + 40 + m * 80;
-        g.fillTriangle(mx, y - h/2 + 3, mx - 5, y - h/2 + 10, mx + 5, y - h/2 + 10);
+        const mx = L + 40 + m * 80;
+        g.fillStyle(L3_PAL.glyph, 0.85);
+        g.fillPoints([{ x: mx, y: y - 3 }, { x: mx + 5, y: y + 2 }, { x: mx, y: y + 7 }, { x: mx - 5, y: y + 2 }], true);
       }
     }
-    // Crumble hint at corners
-    g.fillStyle(0x44403c, 0.45);
-    g.fillTriangle(x - w/2, y + h/2, x - w/2 + 7, y + h/2, x - w/2, y + h/2 - 5);
 
     const body = this.physics.add.staticImage(x, y, null).setVisible(false);
     body.setDisplaySize(w, h); body.refreshBody();

@@ -62,43 +62,131 @@ class CosmicTeaPlanet extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────────────────
   _buildBackground() {
     const W = this._W, H = this._H;
-    const g = this.add.graphics().setDepth(-10);
+    const ADD = Phaser.BlendModes.ADD;
+    const rnd = new Phaser.Math.RandomDataGenerator(['tea-planet']);
+    window.sctTextures(this);
 
-    // Warm amber-gold gradient sky via stacked rects
-    const bands = [
-      [0x1a0800, 1.00],
-      [0x2d1200, 0.95],
-      [0x4a1e00, 0.85],
-      [0x6b3000, 0.70],
-      [0x8b4500, 0.55],
-      [0xaa5a00, 0.35],
-    ];
-    bands.forEach(([col, a], i) => {
-      g.fillStyle(col, a);
-      g.fillRect(0, i * (H / bands.length), W, H / bands.length + 2);
-    });
+    // Golden-hour sky: violet dusk overhead, glowing amber at the horizon
+    window.sctSky(this, 'ctp-sky', [
+      [0.00, '#100826'], [0.28, '#35123f'], [0.50, '#8a2c33'], [0.64, '#d9692c'],
+      [0.74, '#f6b552'], [0.80, '#f9cf73'], [1.00, '#c4622a'],
+    ], -10);
 
-    // Distant rolling hills silhouette
-    g.fillStyle(0x1a0900, 1);
-    g.fillEllipse(W * 0.15, H * 0.62, W * 0.55, H * 0.18);
-    g.fillEllipse(W * 0.55, H * 0.60, W * 0.70, H * 0.20);
-    g.fillEllipse(W * 0.88, H * 0.63, W * 0.50, H * 0.16);
-
-    // Soft ambient glow near horizon — richer gold
-    g.fillStyle(0xfbbf24, 0.10); g.fillRect(0, H * 0.50, W, H * 0.14);
-    g.fillStyle(0xf59e0b, 0.07); g.fillRect(0, H * 0.44, W, H * 0.10);
-    g.fillStyle(0xfde68a, 0.04); g.fillRect(0, H * 0.38, W, H * 0.08);
-
-    // Golden atmospheric haze — distant sparkle points
-    const sparkle = this.add.graphics().setDepth(-8);
-    for (let i = 0; i < 60; i++) {
-      const sx = Phaser.Math.Between(0, W), sy = Phaser.Math.Between(0, H * 0.55);
-      sparkle.fillStyle(0xfde68a, Math.random() * 0.35 + 0.05);
-      sparkle.fillCircle(sx, sy, Math.random() * 1.4 + 0.3);
+    // Stars in the high dusk sky
+    const stars = this.add.graphics().setDepth(-9.8);
+    for (let i = 0; i < 140; i++) {
+      const y = rnd.realInRange(0, H * 0.4);
+      stars.fillStyle([0xffffff, 0xfde68a, 0xf9a8d4][i % 3], rnd.realInRange(0.2, 0.85) * (1 - y / (H * 0.4)));
+      stars.fillCircle(rnd.between(0, W), y, rnd.realInRange(0.3, 1.6));
     }
+    for (let i = 0; i < 7; i++) {
+      const sz = rnd.between(14, 28);
+      const f = this.add.image(rnd.between(0, W), rnd.between(10, H * 0.25), 'sct-flare').setDepth(-9.7)
+        .setBlendMode(ADD).setDisplaySize(sz, sz).setAlpha(0.8);
+      this.tweens.add({ targets: f, alpha: 0.2, duration: rnd.between(1200, 2600), yoyo: true, repeat: -1, delay: rnd.between(0, 1500) });
+    }
+
+    // A pale crescent moon
+    const mx = W * 0.8, my = H * 0.15, mr = Math.min(W, H) * 0.045;
+    this.add.image(mx, my, 'sct-glow').setDepth(-9.6).setBlendMode(ADD).setTint(0xfde68a).setDisplaySize(mr * 7, mr * 7).setAlpha(0.35);
+    if (!this.textures.exists('ctp-moon')) {
+      const S = 128, t = this.textures.createCanvas('ctp-moon', S, S), c = t.getContext();
+      c.fillStyle = '#fef3c7'; c.beginPath(); c.arc(S / 2, S / 2, S * 0.45, 0, Math.PI * 2); c.fill();
+      c.globalCompositeOperation = 'destination-out';
+      c.beginPath(); c.arc(S / 2 + S * 0.19, S / 2 - S * 0.08, S * 0.41, 0, Math.PI * 2); c.fill();
+      t.refresh();
+    }
+    this.add.image(mx, my, 'ctp-moon').setDepth(-9.5).setDisplaySize(mr * 2.2, mr * 2.2);
+
+    // The setting sun, huge and soft, sinking behind the mountains
+    const sunX = W * 0.5, sunY = H * 0.6;
+    this.add.image(sunX, sunY, 'sct-glow').setDepth(-9.4).setBlendMode(ADD).setTint(0xf59e0b).setDisplaySize(W * 1.2, H * 0.9).setAlpha(0.55);
+    this.add.image(sunX, sunY, 'sct-glow').setDepth(-9.3).setBlendMode(ADD).setTint(0xfde68a).setDisplaySize(H * 0.5, H * 0.5).setAlpha(0.8);
+    const sun = this.add.graphics().setDepth(-9.2);
+    sun.fillStyle(0xfff7d6, 0.95); sun.fillCircle(sunX, sunY, H * 0.075);
+
+    // Karst mountains in three misty layers — like a classical ink painting
+    const peaks = (count, baseY, minH, maxH, minW, maxW, col, depth) => {
+      const g = this.add.graphics().setDepth(depth);
+      g.fillStyle(col, 1);
+      g.fillRect(0, baseY, W, H - baseY);
+      // Tall karst spires: wide base, sides curving in, softly rounded tip
+      for (let i = 0; i < count; i++) {
+        const x = (i + rnd.realInRange(0.1, 0.9)) * (W / count);
+        const h = rnd.between(minH, maxH), w = rnd.between(minW, maxW) * 1.6;
+        const lean = rnd.realInRange(-0.12, 0.12) * w;
+        const left = [], right = [];
+        for (let k = 0; k <= 12; k++) {
+          const t = k / 12;                                   // 0 = base, 1 = tip
+          const hw = (w / 2) * (1 - Math.pow(t, 0.7) * 0.72) * (t > 0.9 ? Math.sqrt((1 - t) / 0.1) : 1);
+          const cx = x + lean * t * t, y = baseY - h * t;
+          left.push({ x: cx - hw, y }); right.unshift({ x: cx + hw, y });
+        }
+        g.fillPoints([...left, ...right], true);
+      }
+      return g;
+    };
+    const mist = (y, alpha) => this.add.image(W / 2, y, 'sct-puff').setDepth(-8.45 + alpha * 0.01)
+      .setTint(0xffe4b5).setBlendMode(ADD).setDisplaySize(W * 1.5, H * 0.14).setAlpha(alpha);
+
+    peaks(10, H * 0.6, H * 0.14, H * 0.32, H * 0.07, H * 0.11, 0xc46a43, -9.0);
+    this.add.image(W / 2, H * 0.6, 'sct-puff').setDepth(-8.95).setTint(0xffd8a0).setBlendMode(ADD).setDisplaySize(W * 1.6, H * 0.18).setAlpha(0.5);
+    peaks(7, H * 0.66, H * 0.1, H * 0.24, H * 0.08, H * 0.12, 0x7d3326, -8.8);
+    this.add.image(W / 2, H * 0.66, 'sct-puff').setDepth(-8.75).setTint(0xffc27a).setBlendMode(ADD).setDisplaySize(W * 1.6, H * 0.16).setAlpha(0.4);
+    peaks(6, H * 0.74, H * 0.04, H * 0.1, H * 0.12, H * 0.2, 0x3d1612, -8.6);
+
+    // A tiny pagoda on a distant ridge, windows lit
+    this._buildPagoda(W * 0.84, H * 0.665, Math.max(0.6, H / 900));
+
+    // Sky lanterns rising far away, and drifting golden petals
+    if (!this.textures.exists('ctp-skylantern')) {
+      const g = this.make.graphics({ x: 0, y: 0, add: false });
+      g.fillStyle(0xfb923c, 1); g.fillRoundedRect(2, 1, 8, 11, 3);
+      g.fillStyle(0xfef3c7, 1); g.fillRoundedRect(4, 4, 4, 6, 2);
+      g.generateTexture('ctp-skylantern', 12, 14); g.destroy();
+    }
+    if (!this.textures.exists('ctp-petal')) {
+      const g = this.make.graphics({ x: 0, y: 0, add: false });
+      g.fillStyle(0xffffff, 1); g.fillEllipse(6, 4, 11, 6);
+      g.generateTexture('ctp-petal', 12, 8); g.destroy();
+    }
+    this.add.particles(0, 0, 'ctp-skylantern', {
+      x: { min: 0, max: W }, y: H * 0.72,
+      lifespan: 16000, speedY: { min: -32, max: -18 }, speedX: { min: -6, max: 6 },
+      scale: { min: 0.5, max: 1.1 }, alpha: { start: 0.95, end: 0 },
+      frequency: 900,
+    }).setDepth(-8.5);
+    this.add.particles(0, 0, 'ctp-petal', {
+      x: { min: -40, max: W }, y: { min: -20, max: H * 0.5 },
+      lifespan: 9000, speedX: { min: 20, max: 50 }, speedY: { min: 18, max: 40 },
+      rotate: { min: 0, max: 360 }, scale: { min: 0.6, max: 1.2 },
+      alpha: { start: 0.85, end: 0 }, tint: [0xfde68a, 0xfbcfe8, 0xfcd34d, 0xf9a8d4],
+      frequency: 260,
+    }).setDepth(14);
 
     // Cinematic vignette
     window.addVignette(this, 28, 0.9);
+  }
+
+  _buildPagoda(x, y, s) {
+    const g = this.add.graphics().setDepth(-8.7);
+    g.fillStyle(0x5a2218, 1);
+    let ty = y, w = 46 * s;
+    for (let i = 0; i < 4; i++) {
+      const th = 16 * s;
+      g.fillRect(x - w * 0.32, ty - th, w * 0.64, th);                   // tier wall
+      g.fillStyle(0xfde68a, 0.9);
+      g.fillRect(x - w * 0.12, ty - th * 0.7, w * 0.08, th * 0.4);       // lit windows
+      g.fillRect(x + w * 0.04, ty - th * 0.7, w * 0.08, th * 0.4);
+      g.fillStyle(0x3d1612, 1);
+      g.fillPoints([{ x: x - w * 0.62, y: ty - th - 2 * s }, { x: x + w * 0.62, y: ty - th - 2 * s },   // upturned eave
+        { x: x + w * 0.42, y: ty - th - 8 * s }, { x: x - w * 0.42, y: ty - th - 8 * s }], true);
+      g.fillStyle(0x5a2218, 1);
+      ty -= th + 8 * s; w *= 0.8;
+    }
+    g.lineStyle(2 * s, 0x3d1612, 1); g.lineBetween(x, ty, x, ty - 16 * s);
+    this.add.image(x, y - 30 * s, 'sct-glow').setDepth(-8.72).setBlendMode(Phaser.BlendModes.ADD)
+      .setTint(0xfbbf24).setDisplaySize(120 * s, 140 * s).setAlpha(0.4);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -106,52 +194,60 @@ class CosmicTeaPlanet extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────────────────
   _buildLanterns() {
     const W = this._W, H = this._H;
+    const ADD = Phaser.BlendModes.ADD;
 
+    const drawLantern = (g, rw, rh, col) => {
+      g.fillStyle(col, 0.92); g.fillEllipse(0, 0, rw, rh);
+      g.fillStyle(0xfef3c7, 0.55); g.fillEllipse(0, -rh * 0.05, rw * 0.55, rh * 0.6);
+      g.lineStyle(1, 0x7f1d1d, 0.55);
+      g.lineBetween(-rw * 0.25, -rh * 0.46, -rw * 0.25, rh * 0.46);
+      g.lineBetween(rw * 0.25, -rh * 0.46, rw * 0.25, rh * 0.46);
+      g.lineBetween(0, -rh * 0.5, 0, rh * 0.5);
+      g.fillStyle(0xb45309, 1);
+      g.fillRect(-rw * 0.32, -rh * 0.56, rw * 0.64, rh * 0.12);
+      g.fillRect(-rw * 0.32, rh * 0.44, rw * 0.64, rh * 0.12);
+      g.lineStyle(1.5, 0xfbbf24, 0.9);                                  // tassel
+      g.lineBetween(0, rh * 0.56, 0, rh * 0.9);
+      g.lineBetween(-2, rh * 0.62, -3, rh * 0.95); g.lineBetween(2, rh * 0.62, 3, rh * 0.95);
+    };
+
+    // Hanging garland across the top, between the two banners
+    const rope = this.add.graphics().setDepth(1);
+    const x0 = W * 0.06, x1 = W * 0.94, ry = H * 0.1, sag = H * 0.09;
+    const ropeY = (x) => ry + sag * (1 - Math.pow((x - (x0 + x1) / 2) / ((x1 - x0) / 2), 2));
+    rope.lineStyle(2, 0x3d1612, 0.9); rope.beginPath(); rope.moveTo(x0, ry);
+    for (let x = x0; x <= x1; x += 10) rope.lineTo(x, ropeY(x));
+    rope.strokePath();
+    const n = 9;
+    for (let i = 0; i < n; i++) {
+      const x = x0 + (i + 0.5) * (x1 - x0) / n, y = ropeY(x) + 24, col = i % 2 ? 0xfbbf24 : 0xdc2626;
+      const c = this.add.container(x, y).setDepth(1);
+      const glow = this.add.image(0, 0, 'sct-glow').setBlendMode(ADD).setTint(col).setDisplaySize(90, 90).setAlpha(0.45);
+      const str = this.add.graphics(); str.lineStyle(1, 0x3d1612, 0.9); str.lineBetween(0, -24, 0, -12);
+      const g = this.add.graphics(); drawLantern(g, 18, 24, col);
+      c.add([glow, str, g]);
+      this.tweens.add({ targets: c, angle: { from: -4, to: 4 }, duration: 2000 + i * 130, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      this.tweens.add({ targets: glow, alpha: 0.25, duration: 1400 + i * 90, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+
+    // Free-floating lanterns drifting in the warm air
     const lanternDefs = [
-      [W*0.08, H*0.38, 22, 30, 0xef4444, 2800],
+      [W*0.08, H*0.40, 22, 30, 0xef4444, 2800],
       [W*0.18, H*0.52, 18, 24, 0xfbbf24, 3400],
-      [W*0.28, H*0.30, 24, 32, 0xef4444, 2600],
-      [W*0.72, H*0.35, 20, 26, 0xfbbf24, 3100],
+      [W*0.30, H*0.32, 24, 32, 0xef4444, 2600],
+      [W*0.72, H*0.36, 20, 26, 0xfbbf24, 3100],
       [W*0.82, H*0.48, 22, 30, 0xef4444, 2900],
-      [W*0.91, H*0.28, 18, 24, 0xfbbf24, 3600],
-      [W*0.50, H*0.22, 26, 34, 0xef4444, 3200],
+      [W*0.92, H*0.30, 18, 24, 0xfbbf24, 3600],
       [W*0.62, H*0.42, 20, 28, 0xfbbf24, 2700],
     ];
-
     lanternDefs.forEach(([x, y, rw, rh, col, dur]) => {
-      const g = this.add.graphics().setDepth(1);
-
-      // Lantern body
-      g.fillStyle(col, 0.88);
-      g.fillEllipse(x, y, rw, rh);
-
-      // Inner glow
-      g.fillStyle(0xfef3c7, 0.55);
-      g.fillEllipse(x, y - rh * 0.1, rw * 0.55, rh * 0.45);
-
-      // Top and bottom caps
-      g.fillStyle(0x92400e, 1);
-      g.fillRect(x - rw * 0.35, y - rh * 0.52, rw * 0.70, rh * 0.10);
-      g.fillRect(x - rw * 0.35, y + rh * 0.42, rw * 0.70, rh * 0.10);
-
-      // String
-      g.lineStyle(1, 0x78350f, 0.7);
-      g.lineBetween(x, y - rh * 0.52, x, y - rh * 0.52 - 16);
-
-      // Glow halo
-      g.fillStyle(col, 0.10);
-      g.fillEllipse(x, y, rw * 2.2, rh * 1.8);
-
-      // Float upward, loop
-      this.tweens.add({
-        targets: g,
-        y: `-=${Phaser.Math.Between(28, 48)}`,
-        duration: dur,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
-        delay: Phaser.Math.Between(0, 1200),
-      });
+      const c = this.add.container(x, y).setDepth(1);
+      const glow = this.add.image(0, 0, 'sct-glow').setBlendMode(ADD).setTint(col).setDisplaySize(rw * 5, rh * 4.2).setAlpha(0.5);
+      const g = this.add.graphics(); drawLantern(g, rw, rh, col);
+      c.add([glow, g]);
+      this.tweens.add({ targets: c, y: `-=${Phaser.Math.Between(28, 48)}`, duration: dur, yoyo: true, repeat: -1,
+        ease: 'Sine.easeInOut', delay: Phaser.Math.Between(0, 1200) });
+      this.tweens.add({ targets: c, angle: { from: -5, to: 5 }, duration: dur * 0.8, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     });
   }
 
@@ -279,18 +375,40 @@ class CosmicTeaPlanet extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────────────────
   _buildGround() {
     const W = this._W, H = this._H;
+    const ADD = Phaser.BlendModes.ADD;
+    const top = H * 0.78;
     const g = this.add.graphics().setDepth(2);
 
-    g.fillStyle(0x3d1800, 1);
-    g.fillRect(0, H * 0.78, W, H * 0.22);
+    // Polished wooden terrace
+    g.fillStyle(0x4a1d0c, 1); g.fillRect(0, top, W, H - top);
+    const rows = 6;
+    for (let r = 0; r < rows; r++) {
+      const y0 = top + (H - top) * Math.pow(r / rows, 1.4), y1 = top + (H - top) * Math.pow((r + 1) / rows, 1.4);
+      g.fillStyle(r % 2 ? 0x5a240f : 0x522010, 1); g.fillRect(0, y0, W, y1 - y0);
+      g.lineStyle(1, 0x2a0e06, 0.7); g.lineBetween(0, y0, W, y0);
+      const step = 90 + r * 30, off = (r % 2) * step / 2;
+      for (let x = off; x < W; x += step) g.lineBetween(x, y0, x, y1);
+    }
+    // Red lacquered edge beam with gold trim
+    g.fillStyle(0x991b1b, 1); g.fillRect(0, top - 4, W, 10);
+    g.fillStyle(0xfbbf24, 0.85); g.fillRect(0, top - 4, W, 2);
+    g.fillStyle(0x450a0a, 1); g.fillRect(0, top + 6, W, 3);
 
-    g.fillStyle(0x5c2800, 0.6);
-    g.fillRect(0, H * 0.78, W, 6);
+    // Warm sunset reflection on the wood + lantern light pools
+    this.add.image(W * 0.5, top + 8, 'sct-glow').setDepth(2.1).setBlendMode(ADD).setTint(0xf59e0b)
+      .setDisplaySize(W * 1.1, (H - top) * 0.7).setAlpha(0.35);
+    [[W * 0.28, 0xfbbf24], [W * 0.48, 0xfcd34d], [W * 0.65, 0xfbbf24]].forEach(([x, tint]) =>
+      this.add.image(x, top + 14, 'sct-glow').setDepth(2.2).setBlendMode(ADD).setTint(tint)
+        .setDisplaySize(260, 50).setAlpha(0.45));
 
-    // Subtle tile lines
-    g.lineStyle(1, 0x4a1e00, 0.35);
-    for (let tx = 0; tx < W; tx += 80) {
-      g.lineBetween(tx, H * 0.78, tx, H);
+    // Low railing posts along the front edge
+    const rail = this.add.graphics().setDepth(7);
+    const ry = H * 0.95;
+    rail.fillStyle(0x7f1d1d, 1); rail.fillRect(0, ry - 6, W, 6);
+    rail.fillStyle(0xfbbf24, 0.7); rail.fillRect(0, ry - 6, W, 1.5);
+    for (let x = 30; x < W; x += 120) {
+      rail.fillStyle(0x7f1d1d, 1); rail.fillRect(x - 4, ry - 22, 8, H - ry + 22);
+      rail.fillStyle(0xfbbf24, 0.9); rail.fillCircle(x, ry - 24, 4);
     }
   }
 
