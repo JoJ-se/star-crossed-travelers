@@ -677,8 +677,8 @@ class IntroCutscene extends Phaser.Scene {
     this.tweens.add({
       targets: joaoG, x: Math.round(W * 0.24), duration: 1100, ease: 'Sine.easeOut',
       onComplete: () => {
-        // Distant Bichilin appears in background as Joao looks around
-        this._showDistantBichilin();
+        // Distant Bingqilin appears in background as Joao looks around
+        this._showDistantBingqilin();
 
         // Gentle float while story types
         this.tweens.add({ targets: joaoG, y: '-=16', duration: 2200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
@@ -698,9 +698,9 @@ class IntroCutscene extends Phaser.Scene {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // DISTANT BICHILIN — tiny figure drifting away in background
+  // DISTANT BINGQILIN — tiny figure drifting away in background
   // ─────────────────────────────────────────────────────────────────────────
-  _showDistantBichilin() {
+  _showDistantBingqilin() {
     const W = this.scale.width;
     const H = this.scale.height;
     const s = 0.38;  // small scale = looks distant

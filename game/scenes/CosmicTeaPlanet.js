@@ -98,13 +98,7 @@ class CosmicTeaPlanet extends Phaser.Scene {
     }
 
     // Cinematic vignette
-    const vig = this.add.graphics().setDepth(28);
-    vig.fillStyle(0x000000, 0.38); vig.fillRect(0, 0, W * 0.18, H);
-    vig.fillStyle(0x000000, 0.38); vig.fillRect(W * 0.82, 0, W * 0.18, H);
-    vig.fillStyle(0x000000, 0.25); vig.fillRect(0, 0, W, H * 0.10);
-    vig.fillStyle(0x000000, 0.25); vig.fillRect(0, H * 0.90, W, H * 0.10);
-    vig.fillStyle(0x000000, 0.16); vig.fillRect(0, 0, W * 0.09, H);
-    vig.fillStyle(0x000000, 0.16); vig.fillRect(W * 0.91, 0, W * 0.09, H);
+    window.addVignette(this, 28, 0.9);
   }
 
   // ─────────────────────────────────────────────────────────────────────────

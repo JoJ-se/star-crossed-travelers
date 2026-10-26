@@ -165,13 +165,7 @@ class Level2 extends Phaser.Scene {
     });
 
     // Cinematic vignette
-    const vig = this.add.graphics().setScrollFactor(0).setDepth(29);
-    vig.fillStyle(0x000000, 0.40); vig.fillRect(0, 0, W * 0.18, H);
-    vig.fillStyle(0x000000, 0.40); vig.fillRect(W * 0.82, 0, W * 0.18, H);
-    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, 0, W, H * 0.10);
-    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, H * 0.90, W, H * 0.10);
-    vig.fillStyle(0x000000, 0.18); vig.fillRect(0, 0, W * 0.09, H);
-    vig.fillStyle(0x000000, 0.18); vig.fillRect(W * 0.91, 0, W * 0.09, H);
+    window.addVignette(this, 29, 1);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -583,7 +577,7 @@ class Level2 extends Phaser.Scene {
       fontStyle: 'bold', stroke: '#030712', strokeThickness: 3, resolution: dpr,
     }).setScrollFactor(0).setDepth(30);
 
-    this._levelLabel = this.add.text(W / 2, 16, 'LEVEL 2 — THE NEBULA', {
+    this._levelLabel = this.add.text(W / 2, W < 600 ? 40 : 16, 'LEVEL 2 — THE NEBULA', {
       fontSize: '14px', fontFamily: 'Arial, sans-serif', color: '#a78bfa',
       fontStyle: 'bold', stroke: '#030712', strokeThickness: 3, resolution: dpr,
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(30);
@@ -633,15 +627,16 @@ class Level2 extends Phaser.Scene {
     const H      = this.scale.height;
     const isMobile = W < 600;
     const dpr = window.devicePixelRatio || 1;
-    const bodyFont = isMobile ? '16px' : '18px';
+    const bodyFont = isMobile ? '15px' : '18px';
+    const inset = isMobile ? 72 : 110;
     const panelW = Math.min(700, W - 28);
     const panelX = 14;
     const probe = this.add.text(-9999, -9999, text, {
       fontSize: bodyFont, fontFamily: 'Arial, sans-serif',
       fontStyle: 'bold', resolution: dpr,
-      wordWrap: { width: panelW - 110 }, lineSpacing: 6,
+      wordWrap: { width: panelW - inset }, lineSpacing: 6,
     }).setScrollFactor(0).setVisible(false);
-    const panelH = Math.max(118, 14 + 20 + 6 + probe.height + 16);
+    const panelH = Math.max(isMobile ? 84 : 118, 14 + 20 + 6 + probe.height + 16);
     probe.destroy();
     const mcBottom = (window.mobileControls ? window.mobileControls.reservedBottom : 0);
     const panelY = H - panelH - 14 - mcBottom;
@@ -655,7 +650,7 @@ class Level2 extends Phaser.Scene {
     this._rockyPanel.strokeRoundedRect(panelX + 3, panelY + 3, panelW - 6, panelH - 6, 10);
 
     // Rocky avatar
-    const ax = panelX + 56, ay = panelY + 65;
+    const ax = panelX + (isMobile ? 36 : 56), ay = panelY + (isMobile ? 44 : 65);
     this._rockyPanel.fillStyle(0x78716c, 1);
     [[ax-18,ay],[ax+18,ay],[ax,ay-14],[ax,ay+14],[ax-14,ay-10],[ax+14,ay+10]].forEach(([lx,ly]) => {
       this._rockyPanel.fillEllipse(lx, ly, 13, 7);
@@ -668,8 +663,8 @@ class Level2 extends Phaser.Scene {
     this._rockyPanel.fillStyle(0xffffff, 0.85);
     this._rockyPanel.fillCircle(ax-5, ay-3, 1.5); this._rockyPanel.fillCircle(ax+7, ay-3, 1.5);
 
-    const tx = panelX + 104;
-    this._rockyBodyText.setFontSize(bodyFont).setWordWrapWidth(panelW - 110).setResolution(dpr);
+    const tx = panelX + (isMobile ? 66 : 104);
+    this._rockyBodyText.setFontSize(bodyFont).setWordWrapWidth(panelW - inset).setResolution(dpr);
     this._rockyNameText.setResolution(dpr);
     this._rockyNameText.setText('Rocky:').setPosition(tx, panelY + 14).setAlpha(0);
     this._rockyBodyText.setText('').setPosition(tx, panelY + 36).setAlpha(0);

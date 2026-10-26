@@ -62,7 +62,7 @@ class Level4 extends Phaser.Scene {
     this._buildPlatforms();
     this._buildGeysers();
     this._buildOrbs();
-    this._buildBichilin();
+    this._buildBingqilin();
     this._buildJoao();
     this._buildCheckpoints();
     this._buildHUD();
@@ -205,13 +205,7 @@ class Level4 extends Phaser.Scene {
     ground.fillRect(0, L4_H - 30, L4_W, 6);
 
     // Cinematic vignette
-    const vig = this.add.graphics().setScrollFactor(0).setDepth(29);
-    vig.fillStyle(0x000000, 0.40); vig.fillRect(0, 0, W * 0.18, H);
-    vig.fillStyle(0x000000, 0.40); vig.fillRect(W * 0.82, 0, W * 0.18, H);
-    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, 0, W, H * 0.10);
-    vig.fillStyle(0x000000, 0.28); vig.fillRect(0, H * 0.90, W, H * 0.10);
-    vig.fillStyle(0x000000, 0.18); vig.fillRect(0, 0, W * 0.09, H);
-    vig.fillStyle(0x000000, 0.18); vig.fillRect(W * 0.91, 0, W * 0.09, H);
+    window.addVignette(this, 29, 1);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -236,7 +230,7 @@ class Level4 extends Phaser.Scene {
       [2780, 410, 110, 20],
       [3060, 380, 120, 20],
       [3320, 350, 140, 20],
-      [3500, 340, 260, 20],   // final wide platform — Bichilin is here
+      [3500, 340, 260, 20],   // final wide platform — Bingqilin is here
     ];
 
     // Crack platforms [x, y, w, h]
@@ -532,21 +526,21 @@ class Level4 extends Phaser.Scene {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // BICHILIN — sitting on final platform, facing left toward Joao
+  // BINGQILIN — sitting on final platform, facing left toward Joao
   // ─────────────────────────────────────────────────────────────────────────
-  _buildBichilin() {
+  _buildBingqilin() {
     const bx = 3460, by = 300;
 
-    if (!this.textures.exists('bichilin')) {
+    if (!this.textures.exists('bingqilin')) {
       const rt = this.add.renderTexture(0, 0, 80, 120).setVisible(false);
       const tempG = this.make.graphics({ x: 0, y: 0, add: false });
-      this._drawBichilinAstronaut(tempG, 40, 60, 1);
+      this._drawBingqilinAstronaut(tempG, 40, 60, 1);
       rt.draw(tempG, 0, 0);
-      rt.saveTexture('bichilin');
+      rt.saveTexture('bingqilin');
       tempG.destroy(); rt.destroy();
     }
 
-    this._bichilinSprite = this.add.image(bx, by, 'bichilin')
+    this._bingqilinSprite = this.add.image(bx, by, 'bingqilin')
       .setDisplaySize(52, 78)
       .setFlipX(true)
       .setDepth(9);
@@ -555,12 +549,12 @@ class Level4 extends Phaser.Scene {
     this._buildIceCream(bx + 46, by - 28);
 
     // Trigger zone — when Joao gets within 120px, ending fires
-    this._bichilinTrigger = this.physics.add.staticImage(bx - 60, by, null).setVisible(false);
-    this._bichilinTrigger.setDisplaySize(140, 100);
-    this._bichilinTrigger.refreshBody();
+    this._bingqilinTrigger = this.physics.add.staticImage(bx - 60, by, null).setVisible(false);
+    this._bingqilinTrigger.setDisplaySize(140, 100);
+    this._bingqilinTrigger.refreshBody();
   }
 
-  _drawBichilinAstronaut(g, cx, cy, s) {
+  _drawBingqilinAstronaut(g, cx, cy, s) {
     // Same design as Joao but pink/rose suit, lavender accents, light-blue visor
     const W = 0xfce7f3, B = 0xfbcfe8, V = 0x93c5fd, P = 0xa78bfa;
     g.fillStyle(B,1); g.fillRoundedRect(cx-6*s,cy-14*s,12*s,24*s,3*s);
@@ -690,7 +684,7 @@ class Level4 extends Phaser.Scene {
       fontStyle: 'bold', stroke: '#030712', strokeThickness: 3, resolution: dpr,
     }).setScrollFactor(0).setDepth(30);
 
-    this._levelLabel = this.add.text(W / 2, 16, 'LEVEL 4 — THE FROZEN MOON', {
+    this._levelLabel = this.add.text(W / 2, W < 600 ? 40 : 16, 'LEVEL 4 — THE FROZEN MOON', {
       fontSize: '14px', fontFamily: 'Arial, sans-serif', color: '#67e8f9',
       fontStyle: 'bold', stroke: '#030712', strokeThickness: 3, resolution: dpr,
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(30);
@@ -741,15 +735,16 @@ class Level4 extends Phaser.Scene {
     const H      = this.scale.height;
     const isMobile = W < 600;
     const dpr = window.devicePixelRatio || 1;
-    const bodyFont = isMobile ? '16px' : '18px';
+    const bodyFont = isMobile ? '15px' : '18px';
+    const inset = isMobile ? 72 : 110;
     const panelW = Math.min(700, W - 28);
     const panelX = 14;
     const probe = this.add.text(-9999, -9999, text, {
       fontSize: bodyFont, fontFamily: 'Arial, sans-serif',
       fontStyle: 'bold', resolution: dpr,
-      wordWrap: { width: panelW - 110 }, lineSpacing: 6,
+      wordWrap: { width: panelW - inset }, lineSpacing: 6,
     }).setScrollFactor(0).setVisible(false);
-    const panelH = Math.max(118, 14 + 20 + 6 + probe.height + 16);
+    const panelH = Math.max(isMobile ? 84 : 118, 14 + 20 + 6 + probe.height + 16);
     probe.destroy();
     const mcBottom = (window.mobileControls ? window.mobileControls.reservedBottom : 0);
     const panelY = H - panelH - 14 - mcBottom;
@@ -762,7 +757,7 @@ class Level4 extends Phaser.Scene {
     this._rockyPanel.lineStyle(1, L4_PAL.gold, 0.35);
     this._rockyPanel.strokeRoundedRect(panelX + 3, panelY + 3, panelW - 6, panelH - 6, 10);
 
-    const ax = panelX + 56, ay = panelY + 65;
+    const ax = panelX + (isMobile ? 36 : 56), ay = panelY + (isMobile ? 44 : 65);
     this._rockyPanel.fillStyle(0x78716c, 1);
     [[ax-18,ay],[ax+18,ay],[ax,ay-14],[ax,ay+14],[ax-14,ay-10],[ax+14,ay+10]].forEach(([lx,ly]) => {
       this._rockyPanel.fillEllipse(lx, ly, 13, 7);
@@ -775,8 +770,8 @@ class Level4 extends Phaser.Scene {
     this._rockyPanel.fillStyle(0xffffff, 0.85);
     this._rockyPanel.fillCircle(ax-5, ay-3, 1.5); this._rockyPanel.fillCircle(ax+7, ay-3, 1.5);
 
-    const tx = panelX + 104;
-    this._rockyBodyText.setFontSize(bodyFont).setWordWrapWidth(panelW - 110).setResolution(dpr);
+    const tx = panelX + (isMobile ? 66 : 104);
+    this._rockyBodyText.setFontSize(bodyFont).setWordWrapWidth(panelW - inset).setResolution(dpr);
     this._rockyNameText.setResolution(dpr);
     this._rockyNameText.setText('Rocky:').setPosition(tx, panelY + 14).setAlpha(0);
     this._rockyBodyText.setText('').setPosition(tx, panelY + 36).setAlpha(0);
@@ -825,11 +820,11 @@ class Level4 extends Phaser.Scene {
     const H   = this.scale.height;
     const dpr = window.devicePixelRatio || 1;
 
-    const isBichilin = speaker === 'bichilin';
-    const borderCol  = isBichilin ? L4_PAL.pink  : L4_PAL.blue;
-    const nameCol    = isBichilin ? '#f9a8d4'     : '#93c5fd';
-    const nameStr    = isBichilin ? 'Elina:'      : 'Joao:';
-    const panelBg    = isBichilin ? 0x1a0d14      : 0x0d1425;
+    const isBingqilin = speaker === 'bingqilin';
+    const borderCol  = isBingqilin ? L4_PAL.pink  : L4_PAL.blue;
+    const nameCol    = isBingqilin ? '#f9a8d4'     : '#93c5fd';
+    const nameStr    = isBingqilin ? 'Elina:'      : 'Joao:';
+    const panelBg    = isBingqilin ? 0x1a0d14      : 0x0d1425;
 
     const AVATAR_AREA = 92;          // pixels reserved on left for avatar
     const PAD_H       = 16;          // horizontal inner padding on text side
@@ -856,12 +851,12 @@ class Level4 extends Phaser.Scene {
     bg.fillRoundedRect(panelX, panelY, panelW, panelH, 12);
     bg.lineStyle(2.5, borderCol, 0.9);
     bg.strokeRoundedRect(panelX, panelY, panelW, panelH, 12);
-    bg.lineStyle(1, isBichilin ? 0xfcb8d4 : 0x60a5fa, 0.28);
+    bg.lineStyle(1, isBingqilin ? 0xfcb8d4 : 0x60a5fa, 0.28);
     bg.strokeRoundedRect(panelX + 3, panelY + 3, panelW - 6, panelH - 6, 10);
 
     // Avatar — vertically centered in the panel
     const ax = panelX + 46, ay = panelY + panelH / 2 - 4;
-    if (isBichilin) {
+    if (isBingqilin) {
       bg.fillStyle(0xfce7f3, 0.9); bg.fillCircle(ax, ay - 6, 16);
       bg.lineStyle(1.5, 0xfbcfe8, 0.8); bg.strokeCircle(ax, ay - 6, 16);
       bg.fillStyle(0x93c5fd, 0.85); bg.fillEllipse(ax, ay - 6, 20, 14);
@@ -940,7 +935,7 @@ class Level4 extends Phaser.Scene {
     const hugCX     = 3428;
     const hugCY     = 298;
 
-    // Phase 1: disable physics, tween Joao running toward Bichilin
+    // Phase 1: disable physics, tween Joao running toward Bingqilin
     this.joao.body.enable = false;
     this.joao.setFlipX(false);
     this.tweens.add({
@@ -950,10 +945,10 @@ class Level4 extends Phaser.Scene {
       ease: 'Cubic.easeOut',
     });
 
-    // Phase 2: Bichilin steps toward him (350ms in)
+    // Phase 2: Bingqilin steps toward him (350ms in)
     this.time.delayedCall(350, () => {
       this.tweens.add({
-        targets: this._bichilinSprite,
+        targets: this._bingqilinSprite,
         x: bichMoveX,
         duration: 700,
         ease: 'Sine.easeOut',
@@ -969,7 +964,7 @@ class Level4 extends Phaser.Scene {
 
       // Sprites fade out, hug composite fades in
       this.tweens.add({
-        targets: [this.joao, this._bichilinSprite],
+        targets: [this.joao, this._bingqilinSprite],
         alpha: 0, duration: 220, ease: 'Sine.easeOut',
       });
       this._drawHugComposite(hugCX, hugCY);
@@ -988,7 +983,7 @@ class Level4 extends Phaser.Scene {
   // ── Draw both astronauts in embrace pose using layered Phaser graphics
   _drawHugComposite(cx, cy) {
     const jx = cx - 18;  // Joao body center x
-    const bx = cx + 14;  // Bichilin body center x
+    const bx = cx + 14;  // Bingqilin body center x
 
     // ── Outer warm glow — radiates behind both figures
     const gGlow = this.add.graphics().setDepth(11).setAlpha(0);
@@ -1012,7 +1007,7 @@ class Level4 extends Phaser.Scene {
     const JW = 0xe8edf5, JB = 0xbdc6d4, JP = 0x6366f1;
     const BW = 0xfce7f3, BB = 0xfbcfe8, BP = 0xa78bfa;
 
-    // Joao's right arm wrapping around Bichilin's back
+    // Joao's right arm wrapping around Bingqilin's back
     gArms.fillStyle(JW, 1);
     gArms.fillRoundedRect(jx + 14, cy - 14, bx - jx + 10, 12, 4); // horizontal across
     gArms.lineStyle(1.5, JB, 1);
@@ -1023,7 +1018,7 @@ class Level4 extends Phaser.Scene {
     gArms.strokeRoundedRect(bx + 14, cy - 14, 11, 28, 4);
     gArms.fillStyle(JP, 1); gArms.fillEllipse(bx + 20, cy + 16, 15, 11); // glove peek
 
-    // Bichilin's left arm wrapping around Joao's back
+    // Bingqilin's left arm wrapping around Joao's back
     gArms.fillStyle(BW, 1);
     gArms.fillRoundedRect(jx - 24, cy - 14, bx - jx + 10, 12, 4); // horizontal across
     gArms.lineStyle(1.5, BB, 1);
@@ -1036,7 +1031,7 @@ class Level4 extends Phaser.Scene {
 
     this.tweens.add({ targets: gArms, alpha: 1, duration: 460, ease: 'Sine.easeOut' });
 
-    // ── Joao's body without his right arm (that's in gArms wrapping behind Bichilin)
+    // ── Joao's body without his right arm (that's in gArms wrapping behind Bingqilin)
     const gJoao = this.add.graphics().setDepth(13).setAlpha(0);
     gJoao.fillStyle(JB, 1); gJoao.fillRoundedRect(jx - 6, cy - 14, 12, 24, 3);  // tank
     gJoao.fillStyle(JW, 1); gJoao.fillRoundedRect(jx - 18, cy - 18, 36, 34, 6); // torso
@@ -1056,7 +1051,7 @@ class Level4 extends Phaser.Scene {
     gJoao.fillStyle(JP, 1); gJoao.fillRoundedRect(jx + 1,  cy + 38, 18, 8, 3);
     this.tweens.add({ targets: gJoao, alpha: 1, duration: 460, ease: 'Sine.easeOut' });
 
-    // ── Bichilin's body without her left arm (that's in gArms wrapping behind Joao)
+    // ── Bingqilin's body without her left arm (that's in gArms wrapping behind Joao)
     const gBich = this.add.graphics().setDepth(14).setAlpha(0);
     gBich.fillStyle(BB, 1); gBich.fillRoundedRect(bx - 6, cy - 14, 12, 24, 3);  // tank
     gBich.fillStyle(BW, 1); gBich.fillRoundedRect(bx - 18, cy - 18, 36, 34, 6); // torso
@@ -1084,7 +1079,7 @@ class Level4 extends Phaser.Scene {
     gHelm.lineStyle(2, JB, 1); gHelm.strokeCircle(jx, cy - 28, 20);
     gHelm.fillStyle(JV, 1); gHelm.fillEllipse(jx, cy - 28, 26, 20);
     gHelm.fillStyle(0xffffff, 0.55); gHelm.fillEllipse(jx - 5, cy - 32, 8, 6);
-    // Bichilin's helmet (blue visor)
+    // Bingqilin's helmet (blue visor)
     gHelm.fillStyle(BW, 1); gHelm.fillCircle(bx, cy - 28, 20);
     gHelm.lineStyle(2, BB, 1); gHelm.strokeCircle(bx, cy - 28, 20);
     gHelm.fillStyle(BV, 1); gHelm.fillEllipse(bx, cy - 28, 26, 20);
@@ -1186,18 +1181,18 @@ class Level4 extends Phaser.Scene {
     this.cameras.main.zoomTo(1.0, 550, 'Sine.easeInOut');
 
     this.time.delayedCall(600, () => {
-      // 1. Bichilin
-      this._showEndingDialogue('bichilin', "Joao... I knew you'd make it. I saved the ice cream for us!", 1400, () => {
+      // 1. Bingqilin
+      this._showEndingDialogue('bingqilin', "Joao... I knew you'd make it. I saved the ice cream for us!", 1400, () => {
         // 2. Joao
-        this._showEndingDialogue('joao', "Bichilin... you actually waited..You should have eaten it!", 1400, () => {
-          // 3. Bichilin
-          this._showEndingDialogue('bichilin', "...But...We always do it together.", 1400, () => {
+        this._showEndingDialogue('joao', "Bingqilin... you actually waited..You should have eaten it!", 1400, () => {
+          // 3. Bingqilin
+          this._showEndingDialogue('bingqilin', "...But...We always do it together.", 1400, () => {
             // 4. Joao
             this._showEndingDialogue('joao', "Come here. (-3-)", 1400, () => {
-              // 5. Bichilin
-              this._showEndingDialogue('bichilin', "Now... should we fly back to Earth and get some McDonalds?", 3000, () => {
+              // 5. Bingqilin
+              this._showEndingDialogue('bingqilin', "Now... should we fly back to Earth and get some McDonalds?", 3000, () => {
                 // 6. Joao
-                this._showEndingDialogue('joao', "Bichilin.....", 3000, () => {
+                this._showEndingDialogue('joao', "Bingqilin.....", 3000, () => {
                   // Rocky — four messages
                   this._queueRocky(
                     "Four planets. A debris field, a nebula, an ancient Martian structure, a philosophical Chinese man, and an asteroid. All of that — for ice cream and a hug.",
@@ -1348,14 +1343,15 @@ class Level4 extends Phaser.Scene {
     const H      = this.scale.height;
     const isMobile = W < 600;
     const dpr = window.devicePixelRatio || 1;
-    const bodyFont = isMobile ? '16px' : '18px';
+    const bodyFont = isMobile ? '15px' : '18px';
+    const inset = isMobile ? 72 : 110;
     const panelW = Math.min(700, W - 28);
     const probe = this.add.text(-9999, -9999, text, {
       fontSize: bodyFont, fontFamily: 'Arial, sans-serif',
       fontStyle: 'bold', resolution: dpr,
-      wordWrap: { width: panelW - 110 }, lineSpacing: 6,
+      wordWrap: { width: panelW - inset }, lineSpacing: 6,
     }).setScrollFactor(0).setVisible(false);
-    const panelH = Math.max(118, 14 + 20 + 6 + probe.height + 16);
+    const panelH = Math.max(isMobile ? 84 : 118, 14 + 20 + 6 + probe.height + 16);
     probe.destroy();
     const panelX = (W - panelW) / 2;
     const panelY = (H - panelH) / 2;
@@ -1368,7 +1364,7 @@ class Level4 extends Phaser.Scene {
     this._rockyPanel.lineStyle(1, L4_PAL.gold, 0.35);
     this._rockyPanel.strokeRoundedRect(panelX + 3, panelY + 3, panelW - 6, panelH - 6, 10);
 
-    const ax = panelX + 56, ay = panelY + 65;
+    const ax = panelX + (isMobile ? 36 : 56), ay = panelY + (isMobile ? 44 : 65);
     this._rockyPanel.fillStyle(0x78716c, 1);
     [[ax-18,ay],[ax+18,ay],[ax,ay-14],[ax,ay+14],[ax-14,ay-10],[ax+14,ay+10]].forEach(([lx,ly]) => {
       this._rockyPanel.fillEllipse(lx, ly, 13, 7);
@@ -1381,8 +1377,8 @@ class Level4 extends Phaser.Scene {
     this._rockyPanel.fillStyle(0xffffff, 0.85);
     this._rockyPanel.fillCircle(ax-5, ay-3, 1.5); this._rockyPanel.fillCircle(ax+7, ay-3, 1.5);
 
-    const tx = panelX + 104;
-    this._rockyBodyText.setFontSize(bodyFont).setWordWrapWidth(panelW - 110).setResolution(dpr);
+    const tx = panelX + (isMobile ? 66 : 104);
+    this._rockyBodyText.setFontSize(bodyFont).setWordWrapWidth(panelW - inset).setResolution(dpr);
     this._rockyNameText.setResolution(dpr);
     this._rockyNameText.setText('Rocky:').setPosition(tx, panelY + 14).setAlpha(0);
     this._rockyBodyText.setText('').setPosition(tx, panelY + 36).setAlpha(0);
@@ -1459,8 +1455,8 @@ class Level4 extends Phaser.Scene {
       }
     });
 
-    // Bichilin trigger
-    this.physics.add.overlap(this.joao, this._bichilinTrigger, () => {
+    // Bingqilin trigger
+    this.physics.add.overlap(this.joao, this._bingqilinTrigger, () => {
       this._triggerEnding();
     });
   }

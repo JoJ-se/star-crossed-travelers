@@ -13,11 +13,11 @@ Build one level at a time. Always show me before committing anything.
 ### Joao (Player)
 - The astronaut already visible on the landing page
 - Controlled by the player
-- Determined, loves Bichilin, slightly reckless
+- Determined, loves Bingqilin, slightly reckless
 - Design: use the existing CSS astronaut as visual reference
 
-### Bichilin (Elina)
-- Joao's partner — her nickname in the game is Bichilin
+### Bingqilin (Elina)
+- Joao's partner — her nickname in the game is Bingqilin
 - She is not player-controlled — she appears in cutscenes only
 - Personality: silly, warm, completely unbothered by chaos
 - First appearance: floating in the background reaching for a glowing ice cream cone
@@ -48,7 +48,7 @@ The screen opens on their ship drifting peacefully through deep space. Stars eve
 A cosmic storm hits without warning. The ship cracks in two with a dramatic sound.
 Joao floats out into the debris field. He spins around looking for her.
 
-He spots Bichilin — floating in the distance, completely unbothered, reaching for a glowing ice cream cone drifting past her. She finally notices him and shouts:
+He spots Bingqilin — floating in the distance, completely unbothered, reaching for a glowing ice cream cone drifting past her. She finally notices him and shouts:
 "Heeeyy... I need some help! Also this ice cream is almost mine, don't distract me!"
 
 A current pulls her away before he can reach her — toward the farthest planet in this region: the legendary Ice-Cream Planet.
@@ -173,7 +173,7 @@ Tone: urgent, gorgeous, the finish line is close
 New Mechanic: slippery ice physics — momentum carries, stops are slow; platforms crack and sink after one step
 Hazards: ice geysers erupting from below; sinking platforms that don't come back
 Collectibles: glowing orbs
-Goal: reach Bichilin
+Goal: reach Bingqilin
 
 Rocky commentary:
 - "Slippery. Cold. Cracking platforms. She better be worth it."
@@ -185,12 +185,12 @@ Rocky commentary:
 
 Joao lands on the Ice-Cream Planet, exhausted, boots sliding on the ice. The auroras dance overhead.
 
-He sees her before she sees him — Bichilin, sitting on a crystalline ledge, the glowing ice cream cone floating patiently beside her. Untouched. Waiting.
+He sees her before she sees him — Bingqilin, sitting on a crystalline ledge, the glowing ice cream cone floating patiently beside her. Untouched. Waiting.
 
-She turns around. Seeing him makes her instantly happy. She smiles and runs to Joao. They are finally reunited. Through tears and hugs Bichilin says:
+She turns around. Seeing him makes her instantly happy. She smiles and runs to Joao. They are finally reunited. Through tears and hugs Bingqilin says:
 
 "I saved the ice cream for you."
-Joao: "You could've eaten it, Bichilin."
+Joao: "You could've eaten it, Bingqilin."
 "...we always do it together."
 
 They sit together on the ledge. The ice cream gets passed between them under the auroras.

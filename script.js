@@ -214,7 +214,7 @@ greetTimer = setTimeout(async () => {
 
   // Fade bubble back in while typing starts
   astroBubble.classList.add('visible');
-  await typeText(astroBubble, 'Where is my Bichilin?', 30, 'joao');
+  await typeText(astroBubble, 'Where is my Bingqilin?', 30, 'joao');
 }, 680);
 }
 
@@ -261,7 +261,7 @@ if (astronaut && astronautBody && astroBubble && girlScene) {
   });
 }
 
-// ── Begin Journey Button ────────────────────────────────────
+// ── Begin the Journey Button ────────────────────────────────────
 if (btn) {
   btn.addEventListener('click', () => {
     document.querySelector('.home').style.display = 'none';
