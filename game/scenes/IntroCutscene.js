@@ -389,9 +389,25 @@ class IntroCutscene extends Phaser.Scene {
     const firstY  = H * 0.20;
     const lastY   = H * 0.69 + (isMobile ? 36 : 38);
     const cardPad = isMobile ? 20 : 18;
-    const card = this.add.graphics().setDepth(18);
-    card.fillStyle(0x030712, isMobile ? 0.78 : 0.65);
-    card.fillRoundedRect(cardX, firstY - cardPad, cardW, lastY - firstY + cardPad * 2, 12);
+    // Soft dark panel that fades out at its edges (no hard box)
+    if (!this.textures.exists('intro-panel')) {
+      const PW = 512, PH = 512, t = this.textures.createCanvas('intro-panel', PW, PH), c = t.getContext();
+      const hg = c.createLinearGradient(0, 0, PW, 0);
+      hg.addColorStop(0, 'rgba(3,4,16,0)'); hg.addColorStop(0.18, 'rgba(3,4,16,1)');
+      hg.addColorStop(0.9, 'rgba(3,4,16,1)'); hg.addColorStop(1, 'rgba(3,4,16,0)');
+      c.fillStyle = hg; c.fillRect(0, 0, PW, PH);
+      c.globalCompositeOperation = 'destination-in';
+      const vg = c.createLinearGradient(0, 0, 0, PH);
+      vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(0.16, 'rgba(0,0,0,1)');
+      vg.addColorStop(0.84, 'rgba(0,0,0,1)'); vg.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = vg; c.fillRect(0, 0, PW, PH);
+      t.refresh();
+    }
+    const padX = isMobile ? 10 : 70, padY = H * 0.08;
+    const panelTop = firstY - cardPad - padY, panelH = (lastY - firstY + cardPad * 2) + padY * 2 + H * 0.06;
+    const card = this.add.image(cardX - padX, panelTop, 'intro-panel').setOrigin(0, 0)
+      .setDisplaySize(cardW + padX * 2, panelH).setDepth(18).setAlpha(0);
+    this.tweens.add({ targets: card, alpha: isMobile ? 0.82 : 0.72, duration: 700 });
 
     // ── Font config — mobile: larger + bold italic, no shadow (shadow blur causes mobile blur)
     //                  desktop: italic, gold glow shadow
@@ -471,37 +487,63 @@ class IntroCutscene extends Phaser.Scene {
     const W = this.scale.width;
     const H = this.scale.height;
 
-    // ── Deep-space background
-    const bg = this.add.graphics().setDepth(0);
-    bg.fillStyle(0x010614, 1);
-    bg.fillRect(0, 0, W, H);
+    // ── Deep-space backdrop: smooth sky, glowing nebula, twinkling stars
+    window.sctTextures(this);
+    const ADD = Phaser.BlendModes.ADD;
+    const rnd = new Phaser.Math.RandomDataGenerator(['the-intro']);
+    window.sctSky(this, 'intro-sky', [
+      [0.00, '#02030d'], [0.45, '#080a22'], [0.80, '#140b2e'], [1.00, '#2a1222'],
+    ], 0);
 
-    // ── Distant nebula wisps (subtle atmosphere behind everything)
-    const nebula = this.add.graphics().setDepth(1);
-    nebula.fillStyle(0x1e1b4b, 0.22); nebula.fillEllipse(W * 0.15, H * 0.5, W * 0.55, H * 0.65);
-    nebula.fillStyle(0x312e81, 0.12); nebula.fillEllipse(W * 0.25, H * 0.35, W * 0.40, H * 0.50);
-    nebula.fillStyle(0x4c1d95, 0.09); nebula.fillEllipse(W * 0.70, H * 0.70, W * 0.45, H * 0.40);
-    nebula.fillStyle(0x831843, 0.07); nebula.fillEllipse(W * 0.60, H * 0.20, W * 0.35, H * 0.30);
-    // Slow nebula breathe
-    this.tweens.add({ targets: nebula, alpha: 0.55, duration: 5000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    const neb = [
+      [0.10, 0.28, 0x3730a3, 0.45, 1.0, 0.7], [0.32, 0.78, 0x6d28d9, 0.40, 0.9, 0.55],
+      [0.58, 0.14, 0xbe185d, 0.30, 0.8, 0.45], [0.84, 0.55, 0x1d4ed8, 0.34, 0.9, 0.6],
+      [0.96, 0.12, 0x7e22ce, 0.32, 0.7, 0.5],  [0.55, 0.98, 0xdb2777, 0.26, 1.0, 0.4],
+      [0.40, 0.40, 0xa855f7, 0.16, 0.5, 0.35], [0.75, 0.85, 0x22d3ee, 0.14, 0.5, 0.3],
+    ];
+    const nebImgs = neb.map(([fx, fy, tint, a, sw, sh]) =>
+      this.add.image(W * fx, H * fy, 'sct-puff').setDepth(1).setTint(tint).setAlpha(a)
+        .setBlendMode(ADD).setDisplaySize(Math.max(W, H) * sw, Math.max(W, H) * sh).setAngle(rnd.between(-20, 20)));
+    nebImgs.forEach((img, i) => this.tweens.add({ targets: img, alpha: img.alpha * 0.6, duration: 4000 + i * 700,
+      yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }));
+    // Dark dust lanes give the clouds shape
+    [[0.22, 0.52, 1.0, 0.16, -14], [0.70, 0.36, 0.9, 0.12, 12]].forEach(([fx, fy, sw, sh, ang]) =>
+      this.add.image(W * fx, H * fy, 'sct-puff').setDepth(1.5).setTint(0x020108).setAlpha(0.7)
+        .setDisplaySize(Math.max(W, H) * sw, Math.max(W, H) * sh).setAngle(ang));
 
-    // ── Layered starfield — more stars, 3 depth layers
     const stars1 = this.add.graphics().setDepth(2);
     const stars2 = this.add.graphics().setDepth(3);
     const stars3 = this.add.graphics().setDepth(4);
-    this._drawStars(stars1, 280, W, H);   // deep background stars
-    this._drawStars(stars2, 140, W, H);   // mid-layer
-    this._drawStars(stars3, 60,  W, H);   // bright foreground specks
-    // Offset twinkle phases so layers cycle independently
+    this._drawStars(stars1, 280, W, H);
+    this._drawStars(stars2, 140, W, H);
+    this._drawStars(stars3, 60,  W, H);
     this.tweens.add({ targets: stars2, alpha: 0.45, duration: 2200, yoyo: true, repeat: -1 });
     this.tweens.add({ targets: stars3, alpha: 0.30, duration: 3100, yoyo: true, repeat: -1, delay: 800 });
+    const starTints = [0xffffff, 0x93c5fd, 0xfde68a, 0xf9a8d4, 0xa78bfa];
+    for (let i = 0; i < 16; i++) {
+      const sz = rnd.between(16, 36);
+      const f = this.add.image(rnd.between(0, W), rnd.between(0, H), 'sct-flare').setDepth(4)
+        .setBlendMode(ADD).setTint(starTints[i % 5]).setDisplaySize(sz, sz).setAlpha(0.85);
+      this.tweens.add({ targets: f, alpha: 0.2, duration: rnd.between(900, 2400), yoyo: true, repeat: -1, delay: rnd.between(0, 2000) });
+    }
 
-    // ── Amber planet — rich glow
-    const planet = this.add.graphics().setDepth(5);
-    planet.fillStyle(0x92400e, 0.08); planet.fillCircle(W * 0.82, H * 0.22, 340);
-    planet.fillStyle(0xd97706, 0.14); planet.fillCircle(W * 0.82, H * 0.22, 240);
-    planet.fillStyle(0xf59e0b, 0.09); planet.fillCircle(W * 0.82, H * 0.22, 160);
-    planet.fillStyle(0xfbbf24, 0.05); planet.fillCircle(W * 0.82, H * 0.22, 90);
+    // ── The amber planet they were orbiting — rising from the lower left
+    window.sctAmberPlanet(this);
+    const pd = Math.max(H * 1.15, W * 0.55);
+    const planet = this.add.image(W * 0.16, H + pd * 0.2, 'l1-planet').setDisplaySize(pd, pd).setDepth(5);
+    this.tweens.add({ targets: planet, angle: 3, duration: 30000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+    // Drifting space dust
+    this.add.particles(0, 0, 'sct-spark', {
+      x: { min: 0, max: W }, y: { min: 0, max: H },
+      lifespan: { min: 4000, max: 8000 },
+      speedX: { min: -8, max: 8 }, speedY: { min: -8, max: 8 },
+      scale: { min: 0.1, max: 0.35 }, alpha: { start: 0.6, end: 0 },
+      tint: [0xfcd34d, 0x93c5fd, 0xf9a8d4, 0xffffff],
+      frequency: 160, blendMode: 'ADD',
+    }).setDepth(5.5);
+
+    window.addVignette(this, 60, 0.9);
 
     // ── Cinematic ship — scale responds to screen width ────────────────────
     const shipX = Math.round(W / 2);
@@ -616,13 +658,13 @@ class IntroCutscene extends Phaser.Scene {
     // ── Left half (engine) tumbles upper-left ──────────────────────────────
     this.tweens.add({
       targets: [this._shipLeft, this._engineGlow],
-      x: '-=290', y: '-=135', angle: -54, alpha: 0.56,
+      x: `-=${Math.round(this.scale.width * 0.22)}`, y: `-=${Math.round(this.scale.height * 0.25)}`, angle: -54, alpha: 0.56,
       duration: 1250, ease: 'Sine.easeOut',
     });
     // ── Right half (nose) tumbles lower-right ──────────────────────────────
     this.tweens.add({
       targets: this._shipRight,
-      x: '+=230', y: '+=145', angle: 34, alpha: 0.56,
+      x: `+=${Math.round(this.scale.width * 0.18)}`, y: `+=${Math.round(this.scale.height * 0.2)}`, angle: 34, alpha: 0.56,
       duration: 1250, ease: 'Sine.easeOut',
     });
 
@@ -703,7 +745,7 @@ class IntroCutscene extends Phaser.Scene {
   _showDistantBingqilin() {
     const W = this.scale.width;
     const H = this.scale.height;
-    const s = 0.38;  // small scale = looks distant
+    const s = 0.5;   // small scale = looks distant
 
     const g = this.add.graphics().setDepth(8);
     // Elina — white suit, pink visor, pink accents (exact landing page match)
@@ -717,17 +759,22 @@ class IntroCutscene extends Phaser.Scene {
     g.fillStyle(0xd97706, 0.9);
     g.fillTriangle(icX - 7 * s, icY + 5 * s, icX + 7 * s, icY + 5 * s, icX, icY + 18 * s);
 
-    g.x = Math.round(W * 0.72);
-    g.y = Math.round(H * 0.26);
+    // Sits above the story text, then drifts off toward the upper right
+    g.x = Math.round(W * 0.50);
+    g.y = Math.round(H * 0.10);
     g.setAlpha(0);
+    const glow = this.add.image(g.x + icX, g.y + icY, 'sct-glow').setDepth(7.9)
+      .setBlendMode(Phaser.BlendModes.ADD).setTint(0xf9a8d4).setDisplaySize(70, 70).setAlpha(0);
 
-    // Fade in gently
-    this.tweens.add({ targets: g, alpha: 0.58, duration: 1400, ease: 'Sine.easeOut' });
-    // Slowly drift further away — upper right
-    this.tweens.add({ targets: g, x: Math.round(W * 0.90), y: Math.round(H * 0.18), duration: 9000, ease: 'Sine.easeIn' });
-    // Fade out after a while
+    this.tweens.add({ targets: g, alpha: 0.9, duration: 1400, ease: 'Sine.easeOut' });
+    this.tweens.add({ targets: glow, alpha: 0.7, duration: 1400, ease: 'Sine.easeOut' });
+    this.tweens.add({ targets: g, angle: 10, duration: 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    this.tweens.add({
+      targets: g, x: Math.round(W * 0.92), y: Math.round(H * 0.05), duration: 9000, ease: 'Sine.easeIn',
+      onUpdate: () => { glow.x = g.x + icX; glow.y = g.y + icY; },
+    });
     this.time.delayedCall(5500, () => {
-      this.tweens.add({ targets: g, alpha: 0, duration: 2200, onComplete: () => g.destroy() });
+      this.tweens.add({ targets: [g, glow], alpha: 0, duration: 2200, onComplete: () => { g.destroy(); glow.destroy(); } });
     });
   }
 

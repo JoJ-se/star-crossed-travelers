@@ -68,6 +68,43 @@ window.sctSky = function (scene, key, stops, depth) {
   return scene.add.image(W / 2, H / 2, key).setDisplaySize(W, H).setScrollFactor(0).setDepth(depth);
 };
 
+// The warm amber planet (Level 1 orbit, also seen in the intro). Texture key 'l1-planet'.
+window.sctAmberPlanet = function (scene) {
+    if (!scene.textures.exists('l1-planet')) {
+      const S = 1024, t = scene.textures.createCanvas('l1-planet', S, S), c = t.getContext();
+      const cx = S / 2, cy = S / 2, r = S * 0.42;
+      // Atmosphere halo
+      let g = c.createRadialGradient(cx, cy, r * 0.92, cx, cy, r * 1.18);
+      g.addColorStop(0, 'rgba(251,191,36,0.55)'); g.addColorStop(0.35, 'rgba(245,158,11,0.22)'); g.addColorStop(1, 'rgba(245,158,11,0)');
+      c.fillStyle = g; c.fillRect(0, 0, S, S);
+      c.save(); c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.clip();
+      // Lit body
+      g = c.createRadialGradient(cx - r * 0.3, cy - r * 0.55, r * 0.05, cx, cy, r * 1.05);
+      g.addColorStop(0, '#fef3c7'); g.addColorStop(0.22, '#fbbf24'); g.addColorStop(0.55, '#d97706');
+      g.addColorStop(0.82, '#92400e'); g.addColorStop(1, '#3b1404');
+      c.fillStyle = g; c.fillRect(0, 0, S, S);
+      // Cloud bands
+      c.translate(cx, cy); c.rotate(-0.18);
+      [[-0.62, 0.05, 'rgba(120,53,15,0.35)'], [-0.48, 0.03, 'rgba(254,243,199,0.18)'], [-0.3, 0.07, 'rgba(146,64,14,0.32)'],
+       [-0.1, 0.04, 'rgba(253,230,138,0.20)'], [0.08, 0.08, 'rgba(120,53,15,0.30)'], [0.3, 0.05, 'rgba(254,243,199,0.14)'],
+       [0.48, 0.07, 'rgba(120,53,15,0.34)'], [0.66, 0.04, 'rgba(253,230,138,0.12)']]
+        .forEach(([fy, fh, col]) => { c.fillStyle = col; c.beginPath(); c.ellipse(0, fy * r, r * 1.2, fh * r, 0, 0, Math.PI * 2); c.fill(); });
+      // Storm eye
+      c.fillStyle = 'rgba(146,64,14,0.45)'; c.beginPath(); c.ellipse(r * 0.28, -r * 0.2, r * 0.13, r * 0.06, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = 'rgba(254,243,199,0.30)'; c.beginPath(); c.ellipse(r * 0.26, -r * 0.21, r * 0.06, r * 0.025, 0, 0, Math.PI * 2); c.fill();
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      // Night-side shadow
+      g = c.createLinearGradient(cx - r * 0.6, cy - r * 0.9, cx + r * 0.8, cy + r * 0.7);
+      g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.55, 'rgba(10,6,25,0.15)'); g.addColorStop(1, 'rgba(10,6,25,0.85)');
+      c.fillStyle = g; c.fillRect(0, 0, S, S);
+      c.restore();
+      // Thin bright rim on the lit edge
+      c.strokeStyle = 'rgba(254,243,199,0.5)'; c.lineWidth = 3;
+      c.beginPath(); c.arc(cx, cy, r - 1, Math.PI * 1.05, Math.PI * 1.75); c.stroke();
+      t.refresh();
+    }
+};
+
 window.startGame = function () {
   const container = document.getElementById('game-container');
   container.style.display = 'block';
